@@ -1,7 +1,7 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = '3.2-corda'
-    ext.corda_gradle_plugins_version = '3.1.0'
+    ext.corda_release_version = '4.0-SNAPSHOT'
+    ext.corda_gradle_plugins_version = '4.0.25'
     ext.kotlin_version = '1.1.60'
     ext.junit_version = '4.12'
     ext.quasar_version = '0.7.9'
@@ -25,6 +25,7 @@ allprojects {
         mavenLocal()
         jcenter()
         mavenCentral()
+        maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda-dev' }
         maven { url 'https://ci-artifactory.corda.r3cev.com/artifactory/corda' }
         maven { url 'https://jitpack.io' }
     }
@@ -82,6 +83,7 @@ dependencies {
     // We've defined Cash as a dependent CorDapp as an example.
     cordapp project(":cordapp")
     cordapp project(":cordapp-contracts-states")
+    cordapp project(":bno")
     cordapp "$corda_release_group:corda-finance:$corda_release_version"
 }
 
@@ -116,7 +118,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         ]
     }
     node {
-        name "O=PartyA,L=London,C=GB"
+        name "O=CLIENT-C01,L=London,C=GB"
         p2pPort 10005
         rpcSettings {
             address("localhost:10006")
@@ -130,21 +132,64 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
+//    node {
+//        name "O=DEALER-D01,L=New York,C=US"
+//        p2pPort 10008
+//        rpcSettings {
+//            address("localhost:10009")
+//            adminAddress("localhost:10049")
+//        }
+//        //webPort 10010
+//        cordapps = [
+//                "$project.group:cordapp-contracts-states:$project.version",
+//                "$project.group:cordapp:$project.version",
+//                "$corda_release_group:corda-finance:$corda_release_version"
+//        ]
+//        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+//    }
+//    node {
+//        name "O=CCP-P01,L=New York,C=US"
+//        p2pPort 10011
+//        rpcSettings {
+//            address("localhost:10009")
+//            adminAddress("localhost:10049")
+//        }
+//        //webPort 10013
+//        cordapps = [
+//                "$project.group:cordapp-contracts-states:$project.version",
+//                "$project.group:cordapp:$project.version",
+//                "$corda_release_group:corda-finance:$corda_release_version"
+//        ]
+//        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+//    }
     node {
-        name "O=PartyB,L=New York,C=US"
-        p2pPort 10008
+        name "O=BNO-DTN,L=New York,C=US"
+        p2pPort 10014
         rpcSettings {
             address("localhost:10009")
             adminAddress("localhost:10049")
         }
-        webPort 10010
+        webPort 10016
         cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-                "$corda_release_group:corda-finance:$corda_release_version"
+                "$project.group:bno:$project.version",
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
+//    node {
+//        name "O=MS-DTN,L=New York,C=US"
+//        p2pPort 10017
+//        rpcSettings {
+//            address("localhost:10009")
+//            adminAddress("localhost:10049")
+//        }
+//        //webPort 10019
+//        cordapps = [
+//                "$project.group:cordapp-contracts-states:$project.version",
+//                "$project.group:cordapp:$project.version",
+//                "$corda_release_group:corda-finance:$corda_release_version"
+//        ]
+//        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+//    }
 }
 
 task runTemplateClient(type: JavaExec) {

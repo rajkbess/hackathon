@@ -1,2 +1,7 @@
 include 'cordapp'
 include 'cordapp-contracts-states'
+include 'client'
+include 'bno'
+include 'dealer'
+include 'ccp'
+include 'matching-service'

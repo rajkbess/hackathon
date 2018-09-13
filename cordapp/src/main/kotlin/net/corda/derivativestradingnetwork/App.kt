@@ -22,7 +22,7 @@ import javax.ws.rs.core.Response
 // *****************
 // * API Endpoints *
 // *****************
-@Path("api")
+@Path("memberApi")
 class WebApi(val rpcOps: CordaRPCOps) {
 
     companion object {

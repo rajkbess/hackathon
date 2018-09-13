@@ -1,6 +1,6 @@
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = '4.0-SNAPSHOT'
+    ext.corda_release_version = 'hackathon-temp'
     ext.corda_gradle_plugins_version = '4.0.25'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'
@@ -18,11 +18,6 @@ buildscript {
         classpath "net.corda.plugins:cordformation:$corda_gradle_plugins_version"
         classpath "net.corda.plugins:quasar-utils:$corda_gradle_plugins_version"
     }
-}
-
-configurations.all {
-    println "no caching"
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
 allprojects {
@@ -67,7 +62,7 @@ configurations {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"
 
@@ -99,8 +94,8 @@ task integrationTest(type: Test, dependsOn: []) {
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
-        languageVersion = "1.1"
-        apiVersion = "1.1"
+        languageVersion = "1.2"
+        apiVersion = "1.2"
         jvmTarget = "1.8"
         javaParameters = true   // Useful for reflection.
     }
@@ -152,27 +147,12 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
-//    node {
-//        name "O=CCP-P01,L=New York,C=US"
-//        p2pPort 10011
-//        rpcSettings {
-//            address("localhost:10009")
-//            adminAddress("localhost:10049")
-//        }
-//        //webPort 10013
-//        cordapps = [
-//                "$project.group:cordapp-contracts-states:$project.version",
-//                "$project.group:cordapp:$project.version",
-//                "$corda_release_group:corda-finance:$corda_release_version"
-//        ]
-//        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
-//    }
     node {
         name "O=BNO-DTN,L=New York,C=US"
         p2pPort 10014
         rpcSettings {
-            address("localhost:10009")
-            adminAddress("localhost:10049")
+            address("localhost:10012")
+            adminAddress("localhost:10052")
         }
         webPort 10016
         cordapps = [
@@ -183,21 +163,6 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         ]
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
-//    node {
-//        name "O=MS-DTN,L=New York,C=US"
-//        p2pPort 10017
-//        rpcSettings {
-//            address("localhost:10009")
-//            adminAddress("localhost:10049")
-//        }
-//        //webPort 10019
-//        cordapps = [
-//                "$project.group:cordapp-contracts-states:$project.version",
-//                "$project.group:cordapp:$project.version",
-//                "$corda_release_group:corda-finance:$corda_release_version"
-//        ]
-//        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
-//    }
 }
 
 task runTemplateClient(type: JavaExec) {

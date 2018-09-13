@@ -117,8 +117,9 @@ class WebApi(val rpcOps: CordaRPCOps) {
     }
 
     private fun createMembershipMetadata(membershipDefinitionJson: String) : MembershipMetadata {
-        logger.info("Creating membership metadata from json")
+        logger.info("Creating membership metadata from json $membershipDefinitionJson")
         val allMemberAccounts = parseMembershipDefinitionJson(membershipDefinitionJson)
+        logger.info("Found ${allMemberAccounts.size} member accounts in the file")
         allMemberAccounts.map { it.name }.distinct().forEach { println("Account for $it found in the file") }
         val ourMemberAccounts = allMemberAccounts.filter { it.name == rpcOps.nodeInfo().legalIdentities.first().name.organisation }
         logger.info("Found ${ourMemberAccounts.size} member accounts in the file")

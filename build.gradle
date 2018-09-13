@@ -20,6 +20,11 @@ buildscript {
     }
 }
 
+configurations.all {
+    println "no caching"
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 allprojects {
     repositories {
         mavenLocal()

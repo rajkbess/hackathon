@@ -1,17 +1,19 @@
 package net.corda.derivativestradingnetwork
 
-import co.paralleluniverse.fibers.Suspendable
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.jaxrs.annotation.JacksonFeatures
 import com.google.common.reflect.TypeToken
 import com.google.gson.*
+import net.corda.businessnetworks.membership.common.PartyAndMembershipMetadata
+import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
-import net.corda.core.flows.*
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.startTrackedFlow
-import net.corda.core.serialization.SerializationWhitelist
 import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import net.corda.derivativestradingnetwork.entity.MemberAccountDefinition
+import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
 import net.corda.webserver.services.WebServerPluginRegistry
 import org.slf4j.Logger
 import java.lang.reflect.Type
@@ -47,6 +49,71 @@ class WebApi(val rpcOps: CordaRPCOps) {
             logger.error(ex.message, ex)
             Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
         }
+    }
+
+    @GET
+    @Path("members")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun getMembers() : Response {
+        return try {
+            val parties = getPartiesOnThisBusinessNetwork()
+            Response.status(Response.Status.OK).entity(parties).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @GET
+    @Path("clients")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun getClients() : Response {
+        return try {
+            val clients = getPartiesOnThisBusinessNetwork("client")
+            Response.status(Response.Status.OK).entity(clients).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @GET
+    @Path("dealers")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun getDealers() : Response {
+        return try {
+            val clients = getPartiesOnThisBusinessNetwork("dealer")
+            Response.status(Response.Status.OK).entity(clients).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @GET
+    @Path("ccps")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun getCcps() : Response {
+        return try {
+            val clients = getPartiesOnThisBusinessNetwork("ccp")
+            Response.status(Response.Status.OK).entity(clients).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    private fun getPartiesOnThisBusinessNetwork(role : String) : List<PartyNameAndMembershipMetadata> {
+        return getPartiesOnThisBusinessNetwork().filter { it.membershipMetadata.role.equals(role,true) }
+    }
+
+    private fun getPartiesOnThisBusinessNetwork() : List<PartyNameAndMembershipMetadata> {
+        val flowHandle = rpcOps.startTrackedFlow(::GetMembersFlow,false)
+        return flowHandle.returnValue.getOrThrow().map { PartyNameAndMembershipMetadata(it.party.toString(),it.membershipMetadata) }
     }
 
     private fun createMembershipMetadata(membershipDefinitionJson: String) : MembershipMetadata {

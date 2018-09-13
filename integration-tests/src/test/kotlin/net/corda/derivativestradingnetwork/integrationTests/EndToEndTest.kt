@@ -53,29 +53,33 @@ class EndToEndTest {
             assertEquals(0,bno.getMembershipStates().size)
 
             //clients ask for membership
-            client1.askForMembership(networkDefinition)
-            bno.approveMembership(client1.testIdentity.party)
-            assertEquals(1,bno.getMembershipStates().size)
-
-            client2.askForMembership(networkDefinition)
-            bno.approveMembership(client2.testIdentity.party)
-            assertEquals(2,bno.getMembershipStates().size)
+            acquireMembershipAndConfirmAssertions(bno,client1,networkDefinition)
+            acquireMembershipAndConfirmAssertions(bno,client2,networkDefinition)
 
             //dealers ask for membership
-            dealer1.askForMembership(networkDefinition)
-            bno.approveMembership(dealer1.testIdentity.party)
-            assertEquals(3,bno.getMembershipStates().size)
-
-            dealer2.askForMembership(networkDefinition)
-            bno.approveMembership(dealer2.testIdentity.party)
-            assertEquals(4,bno.getMembershipStates().size)
+            acquireMembershipAndConfirmAssertions(bno,dealer1,networkDefinition)
+            acquireMembershipAndConfirmAssertions(bno,dealer2,networkDefinition)
 
             //ccp asks for membership
-            ccp.askForMembership(networkDefinition)
-            bno.approveMembership(ccp.testIdentity.party)
-            assertEquals(5,bno.getMembershipStates().size)
+            acquireMembershipAndConfirmAssertions(bno, ccp, networkDefinition)
 
+            //check members can see one another
+            listOf(client1,client2,dealer1,dealer2).forEach { confirmVisibility(it as MemberNode, 5, 2, 2, 1) }
         }
+    }
+
+    private fun acquireMembershipAndConfirmAssertions(bno : BnoNode, member : MemberNode, networkDefinition : String) {
+        val membershipsBefore = bno.getMembershipStates().size
+        member.askForMembership(networkDefinition)
+        bno.approveMembership(member.testIdentity.party)
+        assertEquals(membershipsBefore+1,bno.getMembershipStates().size)
+    }
+
+    private fun confirmVisibility(memberNode : MemberNode, allMembers : Int, clients : Int, dealers : Int, ccps : Int) {
+        assertEquals(allMembers,memberNode.getMembersVisibleToNode().size)
+        assertEquals(clients,memberNode.getMembersVisibleToNode("clients").size)
+        assertEquals(dealers,memberNode.getMembersVisibleToNode("dealers").size)
+        assertEquals(ccps,memberNode.getMembersVisibleToNode("ccps").size)
     }
 
 

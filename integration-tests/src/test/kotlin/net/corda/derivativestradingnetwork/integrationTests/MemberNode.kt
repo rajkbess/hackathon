@@ -11,8 +11,8 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
 
 
     //business processes
-    fun askForMembership(role : String, alternativeName : String) {
-        val response = postPlainTextToUrl("{}", "http://${webHandle.listenAddress}/api/memberApi/requestMembership")
+    fun askForMembership(membershipDefinition : String) {
+        val response = postPlainTextToUrl(membershipDefinition, "http://${webHandle.listenAddress}/api/memberApi/requestMembership")
         assertEquals("OK", response.message())
         assertTrue(response.isSuccessful)
     }

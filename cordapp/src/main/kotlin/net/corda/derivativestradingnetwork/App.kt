@@ -1,6 +1,8 @@
 package net.corda.derivativestradingnetwork
 
 import co.paralleluniverse.fibers.Suspendable
+import com.google.common.reflect.TypeToken
+import com.google.gson.*
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.core.flows.*
@@ -9,8 +11,11 @@ import net.corda.core.messaging.startTrackedFlow
 import net.corda.core.serialization.SerializationWhitelist
 import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
+import net.corda.derivativestradingnetwork.entity.MemberAccountDefinition
 import net.corda.webserver.services.WebServerPluginRegistry
 import org.slf4j.Logger
+import java.lang.reflect.Type
+import java.time.Instant
 import java.util.function.Function
 import javax.ws.rs.GET
 import javax.ws.rs.POST
@@ -34,7 +39,8 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @Produces(MediaType.APPLICATION_JSON)
     fun requestMembership(membershipDefinitionJson: String): Response {
         return try {
-            val flowHandle = rpcOps.startTrackedFlow(::RequestMembershipFlow, MembershipMetadata(emptyMap(),"meh","quak","eeks"))
+            val membershipMetadata = createMembershipMetadata(membershipDefinitionJson)
+            val flowHandle = rpcOps.startTrackedFlow(::RequestMembershipFlow, membershipMetadata)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
         } catch (ex: Throwable) {
@@ -43,6 +49,34 @@ class WebApi(val rpcOps: CordaRPCOps) {
         }
     }
 
+    private fun createMembershipMetadata(membershipDefinitionJson: String) : MembershipMetadata {
+        val ourMemberAccounts = parseMembershipDefinitionJson(membershipDefinitionJson).filter { it.name == rpcOps.nodeInfo().legalIdentities.first().name.organisation }
+        val name = if (ourMemberAccounts.map { it.name }.distinct().size == 1) { ourMemberAccounts.first().name } else { throw InvalidMembershipMetadata("All accounts are expected to live under one name")}
+        val role = if (ourMemberAccounts.map { it.type }.distinct().size == 1) { ourMemberAccounts.first().type } else { throw InvalidMembershipMetadata("All accounts are expected to live under one type")}
+        val legalEntityId = if (ourMemberAccounts.map { it.legalEntityId }.distinct().size == 1) { ourMemberAccounts.first().legalEntityId } else { throw InvalidMembershipMetadata("All accounts are expected to live under one legal entity id")}
+        val partyIdAndAccountPairs = ourMemberAccounts.map { it.partyId to it.account }.toMap()
+
+        return MembershipMetadata(partyIdAndAccountPairs, legalEntityId, role, name)
+    }
+
+    private fun parseMembershipDefinitionJson(membershipDefinitionJson : String) : List<MemberAccountDefinition> {
+        val desiredType = object : TypeToken<List<MemberAccountDefinition>>() {}.type
+        return getSuitableGson().fromJson<List<MemberAccountDefinition>>(membershipDefinitionJson,desiredType)
+    }
+
+    protected fun getSuitableGson() : Gson {
+        return GsonBuilder().registerTypeAdapter(Instant::class.java, object : JsonSerializer<Instant> {
+
+            override fun serialize(src: Instant?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
+                return JsonPrimitive(src?.epochSecond ?: 0)
+            }
+
+        }).registerTypeAdapter(Instant::class.java, object : JsonDeserializer<Instant> {
+            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Instant {
+                return Instant.ofEpochSecond(json!!.asLong)
+            }
+        }).create()
+    }
 }
 
 class WebPlugin : WebServerPluginRegistry {

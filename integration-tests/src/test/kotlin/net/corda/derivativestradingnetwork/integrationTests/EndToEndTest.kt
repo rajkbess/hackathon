@@ -21,9 +21,9 @@ class EndToEndTest {
 
             // ----- bno, client, dealer, ccp start nodes -------
             val bno = BnoNode(this, TestIdentity(CordaX500Name("BNO", "New York", "US")),false)
-            val client = MemberNode(this, TestIdentity(CordaX500Name("Client", "", "US")), false)
-            val dealer = MemberNode(this, TestIdentity(CordaX500Name("Dealer", "", "US")), false)
-            val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP", "", "US")), false)
+            val client = MemberNode(this, TestIdentity(CordaX500Name("CLIENT-C01", "", "US")), false)
+            val dealer = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D01", "", "US")), false)
+            val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
 
             listOf(bno, client, dealer, ccp).map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }
 
@@ -43,22 +43,23 @@ class EndToEndTest {
 
     @Test
     fun `Nodes can ask for and get membership`() {
+        val networkDefinition = EndToEndTest::class.java.getResource("/testData/network-definition.json").readText()
         setUpEnvironmentAndRunTest { _, bno, client, dealer, ccp ->
             //at the beginning there are no members
             assertEquals(0,bno.getMembershipStates().size)
 
             //client asks for membership
-            client.askForMembership("Client","Alternative Name")
+            client.askForMembership(networkDefinition)
             bno.approveMembership(client.testIdentity.party)
             assertEquals(1,bno.getMembershipStates().size)
 
             //dealer asks for membership
-            dealer.askForMembership("Dealer","Alternative Name")
+            dealer.askForMembership(networkDefinition)
             bno.approveMembership(dealer.testIdentity.party)
             assertEquals(2,bno.getMembershipStates().size)
 
             //ccp asks for membership
-            ccp.askForMembership("CCP","Alternative Name")
+            ccp.askForMembership(networkDefinition)
             bno.approveMembership(ccp.testIdentity.party)
             assertEquals(3,bno.getMembershipStates().size)
 

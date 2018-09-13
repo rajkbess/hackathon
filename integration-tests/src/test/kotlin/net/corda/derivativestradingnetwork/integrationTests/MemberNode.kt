@@ -4,8 +4,6 @@ import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
 import okhttp3.Request
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Boolean) : BusinessNetworkNode(driver, testIdentity, autoStart) {

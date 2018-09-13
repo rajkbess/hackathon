@@ -25,7 +25,7 @@ class BnoNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Boole
 
 
     fun approveMembership(forParty : Party) {
-        val response = postPlainTextToUrl(forParty.name.toString(),"http://${webHandle.listenAddress}/bnoApi/activateMembership")
+        val response = postPlainTextToUrl(forParty.name.toString(),"http://${webHandle.listenAddress}/api/bnoApi/activateMembership")
         assertEquals("OK", response.message())
         assertTrue(response.isSuccessful)
     }

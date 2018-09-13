@@ -48,20 +48,6 @@ class EndToEndTest {
             bno.confirmNodeIsOnTheNetwork()
             client.confirmNodeIsOnTheNetwork()
 
-            //ask for membership
-            assertEquals(0,bno.getMembershipStates().size)
-            client.askForMembership("Some Customer","meh")
-//
-//            //upload kyc fields
-//            customer.uploadInitialKYCDataFields()
-//            bank.uploadInitialKYCDataFields()
-//            datastore.uploadInitialKYCDataFields()
-//            attester.uploadInitialKYCDataFields()
-//
-//            //upload customer profile info & default attestation
-//            customer.uploadCustomerProfileInfo()
-//            customer.defaultAttestation("ATSTR")
-//            customer.confirmDataPermissionRequestIsInVault(1)
 
             //run the test
             test(this, bno, client)
@@ -71,9 +57,13 @@ class EndToEndTest {
 
 
     @Test
-    fun `Network sets up correctly`() {
+    fun `Nodes can ask for and get membership`() {
         setUpEnvironmentAndRunTest { _, bno, client ->
-            println("Network set up")
+            //ask for membership
+            assertEquals(0,bno.getMembershipStates().size)
+            client.askForMembership("Some Customer","meh")
+            bno.approveMembership(client.testIdentity.party)
+            assertEquals(1,bno.getMembershipStates().size)
         }
     }
 

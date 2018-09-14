@@ -133,6 +133,23 @@ class EndToEndTest {
     }
 
     @Test
+    fun `Trade amendment`() {
+        setUpEnvironmentAndRunTest { _, _, _, _, _, client4, dealer1, _, _ ->
+            assertEquals(0, client4.getLiveContracts().size)
+            assertEquals(0, dealer1.getLiveContracts().size)
+            val dealer1Client4Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-4/newTrade_1.json").readText()
+            dealer1.persistCDMEventOnLedger(dealer1Client4Trade)
+            assertEquals(1, client4.getLiveContracts().size)
+            assertEquals(1, dealer1.getLiveContracts().size)
+
+            val dealer1Client4QuantityChange = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-4/quantityChange_1.json").readText()
+            dealer1.persistCDMEventOnLedger(dealer1Client4QuantityChange)
+            assertEquals(1, client4.getLiveContracts().size)
+            assertEquals(1, dealer1.getLiveContracts().size)
+        }
+    }
+
+    @Test
     fun `New trade, observation, reset, payment`() {
         setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _ ->
             //putting new trade in first

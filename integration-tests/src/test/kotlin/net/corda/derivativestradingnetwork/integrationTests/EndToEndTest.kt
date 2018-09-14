@@ -11,6 +11,8 @@ class EndToEndTest {
     fun setUpEnvironmentAndRunTest(test : (DriverDSL, BnoNode, MemberNode, MemberNode, MemberNode, MemberNode, MemberNode)->Unit) {
         driver(DriverParameters(isDebug = true, startNodesInProcess = true,
                 extraCordappPackagesToScan = listOf(
+                        "net.corda.cdmsupport",
+                        "net.corda.derivativestradingnetwork.flow",
                         "net.corda.businessnetworks.membership.member.service",
                         "net.corda.businessnetworks.membership.member",
                         "net.corda.businessnetworks.membership.bno",
@@ -37,6 +39,7 @@ class EndToEndTest {
             dealer2.confirmNodeIsOnTheNetwork()
             ccp.confirmNodeIsOnTheNetwork()
 
+            establishBusinessNetworkAndConfirmAssertions(bno, listOf(client1,client2,dealer1,dealer2,ccp))
 
             //run the test
             test(this, bno, client1, client2, dealer1, dealer2, ccp)
@@ -46,26 +49,25 @@ class EndToEndTest {
 
 
     @Test
-    fun `Nodes can ask for and get membership`() {
-        val networkDefinition = EndToEndTest::class.java.getResource("/testData/network-definition.json").readText()
+    fun `Party A can trade with Party B`() {
         setUpEnvironmentAndRunTest { _, bno, client1, client2, dealer1, dealer2, ccp ->
-            //at the beginning there are no members
-            assertEquals(0,bno.getMembershipStates().size)
-
-            //clients ask for membership
-            acquireMembershipAndConfirmAssertions(bno,client1,networkDefinition)
-            acquireMembershipAndConfirmAssertions(bno,client2,networkDefinition)
-
-            //dealers ask for membership
-            acquireMembershipAndConfirmAssertions(bno,dealer1,networkDefinition)
-            acquireMembershipAndConfirmAssertions(bno,dealer2,networkDefinition)
-
-            //ccp asks for membership
-            acquireMembershipAndConfirmAssertions(bno, ccp, networkDefinition)
-
-            //check members can see one another
-            listOf(client1,client2,dealer1,dealer2).forEach { confirmVisibility(it as MemberNode, 5, 2, 2, 1) }
+            val newTradeEvent = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade.json").readText()
+            dealer1.persistCDMEventOnLedger(newTradeEvent)
+            dealer1.getLiveContracts()
         }
+    }
+
+    private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {
+        val networkDefinition = EndToEndTest::class.java.getResource("/testData/network-definition.json").readText()
+        //at the beginning there are no members
+        assertEquals(0,bno.getMembershipStates().size)
+
+        membersToBe.forEach {
+            acquireMembershipAndConfirmAssertions(bno,it,networkDefinition)
+        }
+
+        //check members can see one another
+        membersToBe.forEach { confirmVisibility(it as MemberNode, 5, 2, 2, 1) }
     }
 
     private fun acquireMembershipAndConfirmAssertions(bno : BnoNode, member : MemberNode, networkDefinition : String) {

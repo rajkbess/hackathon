@@ -10,7 +10,28 @@ import kotlin.test.assertTrue
 
 class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Boolean) : BusinessNetworkNode(driver, testIdentity, autoStart) {
 
-    //business processes
+    //cdm events related
+    fun persistCDMEventOnLedger(cdmEventJson : String) {
+        val response = postJsonToUrl(cdmEventJson, "http://${webHandle.listenAddress}/api/memberApi/persistCDMEvent")
+        assertEquals("OK", response.message())
+        assertTrue(response.isSuccessful)
+    }
+
+    //vault query related
+    fun getLiveContracts() : List<*> {
+        val nodeAddress = webHandle.listenAddress
+        val url = "http://$nodeAddress/api/memberApi/liveCDMContracts"
+        val request = Request.Builder().url(url).build()
+        val response = getPatientHttpClient().newCall(request).execute()
+
+        assertTrue(response.isSuccessful)
+        assertEquals("OK", response.message())
+
+        val responseInJson = response.body().string()
+        return getSuitableGson().fromJson(responseInJson,List::class.java)
+    }
+
+    //membership related
     fun askForMembership(membershipDefinition : String) {
         val response = postPlainTextToUrl(membershipDefinition, "http://${webHandle.listenAddress}/api/memberApi/requestMembership")
         assertEquals("OK", response.message())

@@ -4,16 +4,19 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.jaxrs.annotation.JacksonFeatures
 import com.google.common.reflect.TypeToken
 import com.google.gson.*
-import net.corda.businessnetworks.membership.common.PartyAndMembershipMetadata
 import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.cdmsupport.network.NetworkMap
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.startTrackedFlow
 import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import net.corda.derivativestradingnetwork.entity.MemberAccountDefinition
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
+import net.corda.derivativestradingnetwork.flow.PersistCDMEventOnLedgerFlow
+import net.corda.derivativestradingnetwork.flow.VaultQueryFlow
+import net.corda.derivativestradingnetwork.flow.VaultQueryType
 import net.corda.webserver.services.WebServerPluginRegistry
 import org.slf4j.Logger
 import java.lang.reflect.Type
@@ -36,6 +39,51 @@ class WebApi(val rpcOps: CordaRPCOps) {
         private val logger: Logger = loggerFor<WebApi>()
     }
 
+    //######## CDM Events related REST endpoints ##########
+    @POST
+    @Path("persistCDMEvent")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun persistCDMEvent(cdmEventJson: String): Response {
+        return try {
+            val networkMap = createNetworkMap()
+            val flowHandle = rpcOps.startTrackedFlow(::PersistCDMEventOnLedgerFlow, cdmEventJson, networkMap)
+            val result = flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    private fun createNetworkMap() : NetworkMap {
+        val flowHandle = rpcOps.startTrackedFlow(::GetMembersFlow,false)
+        val members = flowHandle.returnValue.getOrThrow()
+
+        val partyIdToCordaPartyMap = members.flatMap {
+            val party = it.party
+            it.membershipMetadata.partyIdAndAccountPairs.map { it.key to party }
+        }.toMap()
+
+        return NetworkMap(partyIdToCordaPartyMap)
+    }
+
+    //######## Vault query related REST endpoints #############
+    @GET
+    @Path("liveCDMContracts")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun liveCDMContracts() : Response {
+        return try {
+            val flowHandle = rpcOps.startTrackedFlow(::VaultQueryFlow, VaultQueryType.LIVE_CONTRACTS)
+            val result = flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity(result).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    //######## Membership related REST endpoints #############
     @POST
     @Path("requestMembership")
     @Produces(MediaType.APPLICATION_JSON)

@@ -49,6 +49,8 @@ dependencies {
 
     compile files('../lib/membership-service-0.1.jar')
     compile files('../lib/membership-service-contracts-and-states-0.1.jar')
+    compile files('../lib/cdm-support-0.1.jar')
+    compile files('../lib/cdm-support-contracts-states-0.1.jar')
 
     // CorDapp dependencies
     // Specify your CorDapp's dependencies below, including dependent CorDapps.

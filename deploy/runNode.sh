@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 
+###############################################################################
+# Will run a single node with the Corda App and its web server. Must have
+# run ./gradlew deployNodes beforehand to create apps in the 'build/nodes'
+# directory. Will kill any existing processes for the node. Assumes that
+# the node has a consistent port numbering scheme (see build.gradle)
+#
+# Example
+# ./runNode CLIENT-C01 10020
+#
+#
+###############################################################################
+
 NODENAME=$1
 BASEPORT=$2
-
-echo $NODENAME
-echo $((BASEPORT + 1))
 
 
 cd ../build/nodes/$NODENAME

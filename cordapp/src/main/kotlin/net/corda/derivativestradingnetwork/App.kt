@@ -73,8 +73,20 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun liveCDMContracts() : Response {
+        return createResponseToContractsQuery(VaultQueryType.LIVE_CONTRACTS)
+    }
+
+    @GET
+    @Path("terminatedCDMContracts")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun terminatedCDMContracts() : Response {
+        return createResponseToContractsQuery(VaultQueryType.TERMINATED_CONTRACTS)
+    }
+
+    private fun createResponseToContractsQuery(vaultQueryType: VaultQueryType) : Response {
         return try {
-            val flowHandle = rpcOps.startTrackedFlow(::VaultQueryFlow, VaultQueryType.LIVE_CONTRACTS)
+            val flowHandle = rpcOps.startTrackedFlow(::VaultQueryFlow, vaultQueryType)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity(result).build()
         } catch (ex: Throwable) {

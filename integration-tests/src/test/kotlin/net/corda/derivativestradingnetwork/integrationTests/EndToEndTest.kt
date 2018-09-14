@@ -55,10 +55,10 @@ class EndToEndTest {
     @Test
     fun `Party A can trade with Party B`() {
         setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _ ->
-            val newTradeEvent = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade.json").readText()
+            val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade_1.json").readText()
             assertEquals(0, client1.getLiveContracts().size)
             assertEquals(0, dealer1.getLiveContracts().size)
-            dealer1.persistCDMEventOnLedger(newTradeEvent)
+            dealer1.persistCDMEventOnLedger(dealer1Client1Trade)
             assertEquals(1, client1.getLiveContracts().size)
             assertEquals(1, dealer1.getLiveContracts().size)
         }
@@ -67,7 +67,7 @@ class EndToEndTest {
     @Test
     fun `Party A trades with Party B and Party C`() {
         setUpEnvironmentAndRunTest { _, _, client1, _, _, client4, dealer1, _, _ ->
-            val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade.json").readText()
+            val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade_1.json").readText()
             assertEquals(0, client1.getLiveContracts().size)
             assertEquals(0, client4.getLiveContracts().size)
             assertEquals(0, dealer1.getLiveContracts().size)
@@ -76,7 +76,7 @@ class EndToEndTest {
             assertEquals(0, client4.getLiveContracts().size)
             assertEquals(1, dealer1.getLiveContracts().size)
 
-            val dealer1Client4Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-4/newTrade.json").readText()
+            val dealer1Client4Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-4/newTrade_1.json").readText()
             dealer1.persistCDMEventOnLedger(dealer1Client4Trade)
             assertEquals(1, client1.getLiveContracts().size)
             assertEquals(1, client4.getLiveContracts().size)
@@ -86,12 +86,62 @@ class EndToEndTest {
 
     @Test
     fun `In-House trade`() {
-        setUpEnvironmentAndRunTest { _, _, _, _, _, _, dealer1, _, ccp ->
-            val inHouseTrade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_dealer-1/newTrade.json").readText()
+        setUpEnvironmentAndRunTest { _, _, _, client1, _, _, dealer1, _, _ ->
+            val inHouseTrade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_dealer-1/newTrade_1.json").readText()
             assertEquals(0, dealer1.getLiveContracts().size)
             dealer1.persistCDMEventOnLedger(inHouseTrade)
             assertEquals(1, dealer1.getLiveContracts().size)
         }
+    }
+
+    @Test
+    fun `Trades can be terminated`() {
+        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _ ->
+            assertEquals(0, client1.getLiveContracts().size)
+            assertEquals(0, dealer1.getLiveContracts().size)
+
+            //get two trades in
+            val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade_1.json").readText()
+            dealer1.persistCDMEventOnLedger(dealer1Client1Trade)
+            assertEquals(1, client1.getLiveContracts().size)
+            assertEquals(1, dealer1.getLiveContracts().size)
+
+            val inHouseTrade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_dealer-1/newTrade_1.json").readText()
+            dealer1.persistCDMEventOnLedger(inHouseTrade)
+            assertEquals(2, dealer1.getLiveContracts().size)
+
+            //now terminate
+            assertEquals(0, client1.getTerminatedContracts().size)
+            assertEquals(0, dealer1.getTerminatedContracts().size)
+
+            val dealer1Client1Termination = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/termination_1.json").readText()
+            dealer1.persistCDMEventOnLedger(dealer1Client1Termination)
+            assertEquals(0, client1.getLiveContracts().size)
+            assertEquals(1, dealer1.getLiveContracts().size)
+            assertEquals(1, client1.getTerminatedContracts().size)
+            assertEquals(1, dealer1.getTerminatedContracts().size)
+
+            val dealer1Dealer1Termination = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_dealer-1/termination_1.json").readText()
+            dealer1.persistCDMEventOnLedger(dealer1Dealer1Termination)
+            assertEquals(0, client1.getLiveContracts().size)
+            assertEquals(0, dealer1.getLiveContracts().size)
+            assertEquals(1, client1.getTerminatedContracts().size)
+            assertEquals(2, dealer1.getTerminatedContracts().size)
+        }
+    }
+
+    @Test
+    fun `New trade, observation, reset, payment`() {
+        setUpEnvironmentAndRunTest { _, _, _, client1, _, _, dealer1, _, _ ->
+            val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade_1.json").readText()
+            dealer1.persistCDMEventOnLedger(dealer1Client1Trade)
+            assertEquals(1, dealer1.getLiveContracts().size)
+            assertEquals(1, client1.getLiveContracts().size)
+
+            val observation = EndToEndTest::class.java.getResource("/testData/cdmEvents/observation_1.json").readText()
+        }
+
+
     }
 
     private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {

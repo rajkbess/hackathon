@@ -19,8 +19,16 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
 
     //vault query related
     fun getLiveContracts() : List<*> {
+        return getContracts("liveCDMContracts")
+    }
+
+    fun getTerminatedContracts() : List<*> {
+        return getContracts("terminatedCDMContracts")
+    }
+
+    fun getContracts(qualifier : String) : List<*> {
         val nodeAddress = webHandle.listenAddress
-        val url = "http://$nodeAddress/api/memberApi/liveCDMContracts"
+        val url = "http://$nodeAddress/api/memberApi/$qualifier"
         val request = Request.Builder().url(url).build()
         val response = getPatientHttpClient().newCall(request).execute()
 

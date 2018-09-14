@@ -1,0 +1,58 @@
+{
+  "effectiveDate" : "2018-03-15",
+  "eventDate" : "2018-03-14",
+  "eventEffect" : {
+    "contract" : [ "f47d9b77" ],
+    "effectedContract" : [ "4f62f02" ],
+    "effectedEvent" : "500bd545"
+  },
+  "eventIdentifier" : {
+    "identifierValue" : {
+      "identifier" : "00426D8TH894"
+    },
+    "version" : 1
+  },
+  "eventQualifier" : "Termination",
+  "intent" : "TERMINATION",
+  "party" : [ {
+    "partyId" : [ "5454121752721" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  }, {
+    "partyId" : [ "6251678618390" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  } ],
+  "primitive" : {
+    "quantityChange" : [ {
+      "after" : {
+        "contractReference" : [ {
+          "identifierValue" : {
+            "identifier" : "94ZLOPBCFB",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "version" : 2,
+          "state" : "TERMINATED",
+          "rosettaKey" : "cc1b049e"
+        } ]
+      },
+      "before" : {
+        "contractReference" : [ {
+          "identifierValue" : {
+            "identifier" : "94ZLOPBCFB",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "rosettaKey" : "a1764b35"
+        } ]
+      },
+      "change" : [ {
+        "notionalAmount" : {
+          "amount" : -5000000,
+          "currency" : "USD"
+        }
+      } ]
+    } ]
+  },
+  "timestamp" : {
+    "creationTimestamp" : "2018-03-14T18:13:51"
+  },
+  "rosettaKey" : "500bd545"
+}

@@ -1,0 +1,48 @@
+{
+  "eventDate" : "2018-03-20",
+  "eventEffect" : {
+    "effectedEvent" : "512103b7"
+  },
+  "eventIdentifier" : {
+    "identifierValue" : {
+      "identifier" : "obs-1"
+    }
+  },
+  "eventQualifier" : "Observation",
+  "messageInformation" : {
+    "messageId" : "1486297",
+    "messageIdScheme" : "http://www.party1.com/message-id",
+    "sentBy" : "894500DM8LVOSCMP9T34",
+    "sentTo" : "49300JZDC6K840D7F79"
+  },
+  "primitive" : {
+    "observation" : [ {
+      "date" : "2018-03-20",
+      "observation" : 0.875,
+      "source" : {
+        "curve" : {
+          "interestRateCurve" : {
+            "floatingRateIndex" : "EUR_LIBOR_BBA",
+            "tenor" : {
+              "period" : "M",
+              "periodMultiplier" : 6
+            }
+          }
+        },
+        "informationSource" : {
+          "sourcePage" : "pagetbd",
+          "sourceProvider" : "BLOOMBERG"
+        }
+      },
+      "time" : {
+        "location" : "UTC",
+        "locationScheme" : "http://www.fpml.org/coding-scheme/external/tzdatabase",
+        "time" : "11:00:00"
+      }
+    } ]
+  },
+  "timestamp" : {
+    "creationTimestamp" : "2018-03-20T18:13:51"
+  },
+  "rosettaKey" : "512103b7"
+}

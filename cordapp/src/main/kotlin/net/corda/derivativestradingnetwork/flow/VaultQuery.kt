@@ -31,7 +31,7 @@ class VaultQueryFlow(val vaultQueryType : VaultQueryType) : FlowLogic<String>() 
 
     @Suspendable
     private fun terminatedContracts(cdmVaultQuery: DefaultCdmVaultQuery) : String {
-        return toJson(cdmVaultQuery.getLiveContracts())
+        return toJson(cdmVaultQuery.getTerminatedContracts())
     }
 
     private fun toJson(objects : List<Any>) : String {

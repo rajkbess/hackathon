@@ -158,7 +158,13 @@ class EndToEndTest {
             assertEquals(1, client1.getResets(contractId,contractIdScheme).size)
             assertEquals(1, dealer1.getResets(contractId,contractIdScheme).size)
 
-
+            //followed by a payment
+            assertEquals(0, client1.getPayments(contractId,contractIdScheme).size)
+            assertEquals(0, dealer1.getPayments(contractId,contractIdScheme).size)
+            val payment = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/payment_1.json").readText()
+            dealer1.persistCDMEventOnLedger(payment)
+            assertEquals(1, client1.getPayments(contractId,contractIdScheme).size)
+            assertEquals(1, dealer1.getPayments(contractId,contractIdScheme).size)
 
 
         }
@@ -193,4 +199,5 @@ class EndToEndTest {
 
 
     //@todo sequence of events, ask for which client, dealer etc
+    //new trade, amendment, payment
 }

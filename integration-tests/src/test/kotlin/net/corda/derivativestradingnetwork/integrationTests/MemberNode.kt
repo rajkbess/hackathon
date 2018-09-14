@@ -27,8 +27,16 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
     }
 
     fun getResets(contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
+        return getContractEvents("CDMResets", contractId, contractIdScheme, issuer, partyReference)
+    }
+
+    fun getPayments(contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
+        return getContractEvents("CDMPayments", contractId, contractIdScheme, issuer, partyReference)
+    }
+
+    private fun getContractEvents(type : String, contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
         val nodeAddress = webHandle.listenAddress
-        val url = "http://$nodeAddress/api/memberApi/CDMResets"
+        val url = "http://$nodeAddress/api/memberApi/$type"
         val response = getFromUrlWithAQueryParameter(url, mapOf("contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference).filter { it.value != null } as Map<String,String>)
 
         assertTrue(response.isSuccessful)

@@ -15,7 +15,8 @@ enum class VaultQueryType {
 
 @CordaSerializable
 enum class VaultTargetedQueryType {
-    RESETS
+    RESETS,
+    PAYMENTS
 }
 
 @StartableByRPC
@@ -32,16 +33,12 @@ class VaultQueryFlow(val vaultQueryType : VaultQueryType) : FlowLogic<String>() 
 
     @Suspendable
     private fun liveContracts(cdmVaultQuery: DefaultCdmVaultQuery) : String {
-        return toJson(cdmVaultQuery.getLiveContracts())
+        return serializeCdmObjectIntoJson(cdmVaultQuery.getLiveContracts())
     }
 
     @Suspendable
     private fun terminatedContracts(cdmVaultQuery: DefaultCdmVaultQuery) : String {
-        return toJson(cdmVaultQuery.getTerminatedContracts())
-    }
-
-    private fun toJson(objects : List<Any>) : String {
-        return objects.fold("[") { left, right -> "${left}${serializeCdmObjectIntoJson(right)},"}.removeSuffix(",") + "]"
+        return serializeCdmObjectIntoJson(cdmVaultQuery.getTerminatedContracts())
     }
 }
 
@@ -54,6 +51,7 @@ class VaultTargetedQueryFlow(val vaultTargetedQueryType : VaultTargetedQueryType
         val contractIdentifier = createContractIdentifier(contractId, contractIdScheme, issuer, partyReference)
         return when (vaultTargetedQueryType) {
             VaultTargetedQueryType.RESETS -> serializeCdmObjectIntoJson(cdmVaultQuery.getResets(contractIdentifier))
+            VaultTargetedQueryType.PAYMENTS -> serializeCdmObjectIntoJson(cdmVaultQuery.getPayments(contractIdentifier))
         }
     }
 

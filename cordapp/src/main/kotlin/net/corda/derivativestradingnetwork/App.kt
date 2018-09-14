@@ -87,6 +87,14 @@ class WebApi(val rpcOps: CordaRPCOps) {
         return createResponseToTargetedQuery(VaultTargetedQueryType.RESETS,contractId,contractIdScheme,issuer,partyReference)
     }
 
+    @GET
+    @Path("CDMPayments")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun cDMPayments(@QueryParam("contractId") contractId: String, @QueryParam("contractIdScheme") contractIdScheme: String,@QueryParam("issuer") issuer: String?,@QueryParam("partyReference") partyReference: String?) : Response {
+        return createResponseToTargetedQuery(VaultTargetedQueryType.PAYMENTS,contractId,contractIdScheme,issuer,partyReference)
+    }
+
     private fun createResponseToTargetedQuery(vaultTargetedQueryType: VaultTargetedQueryType, contractId: String, contractIdScheme: String, issuer: String?, partyReference: String?) : Response {
         return try {
             val flowHandle = rpcOps.startTrackedFlow(::VaultTargetedQueryFlow, vaultTargetedQueryType, contractId, contractIdScheme, issuer, partyReference)

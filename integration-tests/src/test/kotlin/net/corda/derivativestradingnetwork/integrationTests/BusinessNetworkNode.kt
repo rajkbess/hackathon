@@ -70,17 +70,12 @@ abstract class BusinessNetworkNode(val driver : DriverDSL, val testIdentity : Te
         return response
     }
 
-    protected fun getFromUrlWithAQueryParameter(url : String, name: String, value: String) : Response {
+    protected fun getFromUrlWithAQueryParameter(url : String, nameAndVauleMap : Map<String,String>) : Response {
         val httpBuilder = HttpUrl.parse(url).newBuilder()
-        httpBuilder.addQueryParameter(name,value)
 
-        val request = Request.Builder().url(httpBuilder.build()).build()
-        return getPatientHttpClient().newCall(request).execute()
-    }
-
-    protected fun getWithAQueryParameter(url : String, name: String, value: String) : Response {
-        val httpBuilder = HttpUrl.parse(url).newBuilder()
-        httpBuilder.addQueryParameter(name,value)
+        nameAndVauleMap.forEach {
+            httpBuilder.addQueryParameter(it.key,it.value)
+        }
 
         val request = Request.Builder().url(httpBuilder.build()).build()
         return getPatientHttpClient().newCall(request).execute()

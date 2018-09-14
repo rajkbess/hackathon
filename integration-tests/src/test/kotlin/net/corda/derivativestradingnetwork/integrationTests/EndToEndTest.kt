@@ -1,6 +1,7 @@
 package net.corda.derivativestradingnetwork.integrationTests
 
 import net.corda.core.identity.CordaX500Name
+import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.*
 import org.junit.Test
@@ -16,7 +17,8 @@ class EndToEndTest {
                         "net.corda.businessnetworks.membership.member.service",
                         "net.corda.businessnetworks.membership.member",
                         "net.corda.businessnetworks.membership.bno",
-                        "net.corda.businessnetworks.membership.states"))) {
+                        "net.corda.businessnetworks.membership.states"),
+                        networkParameters = testNetworkParameters(minimumPlatformVersion = 4))) {
 
 
 
@@ -132,16 +134,34 @@ class EndToEndTest {
 
     @Test
     fun `New trade, observation, reset, payment`() {
-        setUpEnvironmentAndRunTest { _, _, _, client1, _, _, dealer1, _, _ ->
+        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _ ->
+            //putting new trade in first
+            val contractId = "7IE1XJPRMD"
+            val contractIdScheme = "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+
             val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade_1.json").readText()
+            assertEquals(0, client1.getLiveContracts().size)
+            assertEquals(0, dealer1.getLiveContracts().size)
             dealer1.persistCDMEventOnLedger(dealer1Client1Trade)
-            assertEquals(1, dealer1.getLiveContracts().size)
             assertEquals(1, client1.getLiveContracts().size)
+            assertEquals(1, dealer1.getLiveContracts().size)
 
+            //followed by an observation
             val observation = EndToEndTest::class.java.getResource("/testData/cdmEvents/observation_1.json").readText()
+            dealer1.persistCDMEventOnLedger(observation)
+
+            //followed by a reset
+            assertEquals(0, client1.getResets(contractId,contractIdScheme).size)
+            assertEquals(0, dealer1.getResets(contractId,contractIdScheme).size)
+            val reset = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/reset_1.json").readText()
+            dealer1.persistCDMEventOnLedger(reset)
+            assertEquals(1, client1.getResets(contractId,contractIdScheme).size)
+            assertEquals(1, dealer1.getResets(contractId,contractIdScheme).size)
+
+
+
+
         }
-
-
     }
 
     private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {

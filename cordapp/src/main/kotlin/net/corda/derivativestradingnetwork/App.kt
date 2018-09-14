@@ -14,18 +14,13 @@ import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import net.corda.derivativestradingnetwork.entity.MemberAccountDefinition
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
-import net.corda.derivativestradingnetwork.flow.PersistCDMEventOnLedgerFlow
-import net.corda.derivativestradingnetwork.flow.VaultQueryFlow
-import net.corda.derivativestradingnetwork.flow.VaultQueryType
+import net.corda.derivativestradingnetwork.flow.*
 import net.corda.webserver.services.WebServerPluginRegistry
 import org.slf4j.Logger
 import java.lang.reflect.Type
 import java.time.Instant
 import java.util.function.Function
-import javax.ws.rs.GET
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.Produces
+import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
@@ -82,6 +77,25 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun terminatedCDMContracts() : Response {
         return createResponseToContractsQuery(VaultQueryType.TERMINATED_CONTRACTS)
+    }
+
+    @GET
+    @Path("CDMResets")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun cDMResets(@QueryParam("contractId") contractId: String, @QueryParam("contractIdScheme") contractIdScheme: String,@QueryParam("issuer") issuer: String?,@QueryParam("partyReference") partyReference: String?) : Response {
+        return createResponseToTargetedQuery(VaultTargetedQueryType.RESETS,contractId,contractIdScheme,issuer,partyReference)
+    }
+
+    private fun createResponseToTargetedQuery(vaultTargetedQueryType: VaultTargetedQueryType, contractId: String, contractIdScheme: String, issuer: String?, partyReference: String?) : Response {
+        return try {
+            val flowHandle = rpcOps.startTrackedFlow(::VaultTargetedQueryFlow, vaultTargetedQueryType, contractId, contractIdScheme, issuer, partyReference)
+            val result = flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity(result).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
     }
 
     private fun createResponseToContractsQuery(vaultQueryType: VaultQueryType) : Response {

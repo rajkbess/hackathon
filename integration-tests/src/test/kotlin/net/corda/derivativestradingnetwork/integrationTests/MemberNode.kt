@@ -26,6 +26,18 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         return getContracts("terminatedCDMContracts")
     }
 
+    fun getResets(contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
+        val nodeAddress = webHandle.listenAddress
+        val url = "http://$nodeAddress/api/memberApi/CDMResets"
+        val response = getFromUrlWithAQueryParameter(url, mapOf("contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference).filter { it.value != null } as Map<String,String>)
+
+        assertTrue(response.isSuccessful)
+        assertEquals("OK", response.message())
+
+        val responseInJson = response.body().string()
+        return getSuitableGson().fromJson(responseInJson,List::class.java)
+    }
+
     fun getContracts(qualifier : String) : List<*> {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/$qualifier"

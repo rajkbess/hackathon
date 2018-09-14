@@ -213,8 +213,4 @@ class EndToEndTest {
         assertEquals(dealers,memberNode.getMembersVisibleToNode("dealers").size)
         assertEquals(ccps,memberNode.getMembersVisibleToNode("ccps").size)
     }
-
-
-    //@todo sequence of events, ask for which client, dealer etc
-    //new trade, amendment, payment
 }

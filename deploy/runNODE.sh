@@ -3,9 +3,6 @@
 export NODENAME=CLIENT-C01
 cd ../build/nodes/$NODENAME
 
-echo "Killing existing $NODENAME processes"
-for pid in $(ps -ef | grep "java" | grep "$NODENAME" | awk '{print $2}'); do kill -9  $pid; done
-
 echo "Starting Node $NODENAME"
 /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -Dname=$NODENAME -Dcapsule.jvm.args=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -javaagent:drivers/jolokia-jvm-1.3.7-agent.jar=port=7005,logHandlerClass=net.corda.node.JolokiaSlf4jAdapter -jar corda.jar --no-local-shell &
 

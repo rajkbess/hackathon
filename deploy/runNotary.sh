@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+###############################################################################
+# Will run the Notary.  Must have
+# run ./gradlew deployNodes beforehand to create apps in the 'build/nodes'
+# directory.
+#
+###############################################################################
+
+
 cd ../build/nodes/Notary
 
 echo "Starting Notary"

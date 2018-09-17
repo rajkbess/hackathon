@@ -30,22 +30,44 @@ The EndToEndTest.kt file sets up a network of dealers, clients and ccp, governed
 
 ## Running the whole network
 
-You can use the well-known sequence of 
+### Building and starting nodes
 
-* gradlew clean deploynodes
-* cd build/nodes
-* runnodes
+There are two options. You can use the well-known sequence of:
 
-To start a network of the Barclays Hackathon clients, dealers, ccp and BNO. You will then have 1 BNO, 1 CCP, 5 clients and 3 dealers nodes running. Each of these nodes represents one legal entity.
+```bash
+./gradlew clean deploynodes
+cd build/nodes
+./runnodes
+```
 
-To quickly run the initial network joining process
+However this may not run reliably with the full set of nodes (_sometimes nodes fail to start in time_). In this case 
+a process for quickly deploying to a cloud server is documented in the 'deploy' folder, simply refer to 
+the README. Alternatively try editing 'build.gradle' to remove some of the nodes (_will need to rerun 
+the steps above afterwards_).  
+
+Once running the full network will then have 1 BNO, 1 CCP, 5 clients and 3 dealers nodes running. 
+Each of these nodes represents one legal entity.
+
+If all is running correctly the following will be available:
+
+* [BNO-DTN](http://localhost:10013)
+* [CCP-P01](http://localhost:10103)
+* [CLIENT-C01](http://localhost:10023)
+* [CLIENT-C02](http://localhost:10033)
+* [CLIENT-C03](http://localhost:10043)
+* [CLIENT-C04](http://localhost:10053)
+* [CLIENT-C05](http://localhost:10063)
+* [DEALER-D01](http://localhost:10073)
+* [DEALER-D02](http://localhost:10083)
+* [DEALER-D03](http://localhost:10093)
+
+The notary RPC process is available on port 10003 but there is no web UI.
+
+### Initial joining process
+
+Nodes to request membership which is then approved by the BNO. To quickly run these steps:
 
 ```bash
 cd deploy 
 ./joinNetwork.sh 
 ```
-
-Running so many nodes locally may be troublesome, in this case we recommend either:
-
-* Setting up a cloud server, using the scripts and processes documented in the 'deploy' folder
-* Editing 'build.gradle' to remove some of the node (will need to rerun 'gradlew clean deploynodes') 

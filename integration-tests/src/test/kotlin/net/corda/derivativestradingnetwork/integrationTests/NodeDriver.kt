@@ -36,7 +36,7 @@ class NodeDriver {
             val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
 
             val nonBnoNodes = listOf(client1, client2, client3, client4, client5, dealer1, dealer2, dealer3, ccp)
-            val nodes = listOf(bno, client1, client2, client3, client4, client5, dealer1, dealer2, dealer3, ccp)
+            val nodes = listOf(bno) + nonBnoNodes
 
             nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.forEach { it.waitForWebToStart() }
             nodes.forEach { node -> node.confirmNodeIsOnTheNetwork() }

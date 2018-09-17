@@ -29,23 +29,18 @@ class NodeDriver {
             val client2 = MemberNode(this, TestIdentity(CordaX500Name("CLIENT-C02", "", "US")), false)
             val client3 = MemberNode(this, TestIdentity(CordaX500Name("CLIENT-C03", "", "US")), false)
             val client4 = MemberNode(this, TestIdentity(CordaX500Name("CLIENT-C04", "", "US")), false)
+            val client5 = MemberNode(this, TestIdentity(CordaX500Name("CLIENT-C05", "", "US")), false)
             val dealer1 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D01", "", "US")), false)
             val dealer2 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D02", "", "US")), false)
+            val dealer3 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D03", "", "US")), false)
             val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
 
-            listOf(bno, client1, client2, client3, client4, dealer1, dealer2, ccp).map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }
+            val nonBnoNodes = listOf(client1, client2, client3, client4, client5, dealer1, dealer2, dealer3, ccp)
+            val nodes = listOf(bno, client1, client2, client3, client4, client5, dealer1, dealer2, dealer3, ccp)
 
-            //confirm all the nodes are on the network
-            bno.confirmNodeIsOnTheNetwork()
-            client1.confirmNodeIsOnTheNetwork()
-            client2.confirmNodeIsOnTheNetwork()
-            client3.confirmNodeIsOnTheNetwork()
-            client4.confirmNodeIsOnTheNetwork()
-            dealer1.confirmNodeIsOnTheNetwork()
-            dealer2.confirmNodeIsOnTheNetwork()
-            ccp.confirmNodeIsOnTheNetwork()
-
-            establishBusinessNetworkAndConfirmAssertions(bno, listOf(client1, client2, client3, client4, dealer1, dealer2, ccp))
+            nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.forEach { it.waitForWebToStart() }
+            nodes.forEach { node -> node.confirmNodeIsOnTheNetwork() }
+            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes)
         }
     }
 

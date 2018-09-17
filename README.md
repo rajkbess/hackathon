@@ -36,4 +36,4 @@ You can use the well-known sequence of
 * cd build/nodes
 * runnodes
 
-To start a network of the Barclays Hackathon clients, dealers, ccp and BNO
+To start a network of the Barclays Hackathon clients, dealers, ccp and BNO. You will then have 1 BNO, 1 CCP, 5 clients and 3 dealers nodes running. Each of these nodes represents one legal entity.

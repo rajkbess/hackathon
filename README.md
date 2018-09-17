@@ -37,3 +37,15 @@ You can use the well-known sequence of
 * runnodes
 
 To start a network of the Barclays Hackathon clients, dealers, ccp and BNO. You will then have 1 BNO, 1 CCP, 5 clients and 3 dealers nodes running. Each of these nodes represents one legal entity.
+
+To quickly run the initial network joining process
+
+```bash
+cd deploy 
+./joinNetwork.sh 
+```
+
+Running so many nodes locally may be troublesome, in this case we recommend either:
+
+* Setting up a cloud server, using the scripts and processes documented in the 'deploy' folder
+* Editing 'build.gradle' to remove some of the node (will need to rerun 'gradlew clean deploynodes') 

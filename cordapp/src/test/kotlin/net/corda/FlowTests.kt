@@ -1,4 +1,4 @@
-package com.template
+package net.corda
 
 import net.corda.testing.node.MockNetwork
 import org.junit.After
@@ -7,15 +7,9 @@ import org.junit.Test
 
 class FlowTests {
 
-    private val network = MockNetwork(listOf("com.template"))
+    private val network = MockNetwork(listOf("net.corda"))
     private val a = network.createNode()
     private val b = network.createNode()
-
-    init {
-        listOf(a, b).forEach {
-            it.registerInitiatedFlow(Responder::class.java)
-        }
-    }
 
     @Before
     fun setup() = network.runNetwork()

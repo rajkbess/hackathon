@@ -19,3 +19,21 @@ Each node is defined by
    * list of (partyId, account) pairs
    
 This definition is then used to map `partyId` on a CDM event to a Corda party
+
+## Sample usage
+
+The EndToEndTest.kt file sets up a network of dealers, clients and ccp, governed by a Business Network Operator. Please refer to these tests for reference on
+
+* How membership in the business network is requested and granted
+* How CDM events are stored by nodes on the ledger
+* How CDM events are queried from the ledger
+
+## Running the whole network
+
+You can use the well-known sequence of 
+
+* gradlew clean deploynodes
+* cd build/nodes
+* runnodes
+
+To start a network of the Barclays Hackathon clients, dealers, ccp and BNO

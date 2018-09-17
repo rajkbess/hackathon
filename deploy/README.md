@@ -14,11 +14,11 @@ which sometimes suffers from  timeout problems when starting a large number of n
 
 Deploy a cloud server. We used a Standard GS1 instance on Azure (2 vcpus, 28 GB memory)
 Open ports as necessary. At a minimum 22 for SSH. We also just opened the range 10000-10999 
-for access to the Corda services started 
+for access to the Corda services started.
 
 ## Patch server 
 
-For ubuntu just run step in 'ubuntu.sh'
+Update JDK etc as required for Corda. For Ubuntu, just run the steps in 'ubuntu.sh'.
 
 ## Checkout code and build nodes
 
@@ -32,7 +32,7 @@ _note, deployNodes will take a few minutes_
 
 ## Running nodes
 
-The use of 'build/nodes/runnodes' is not recommended. It is has startup order 
+The use of 'build/nodes/runnodes' is not recommended. It has startup order 
 problems when starting so many nodes and web servers. Instead use the bash scripts in the 
 'deploy' directory (_you must run these from this directory_). To start a single 
 node run 

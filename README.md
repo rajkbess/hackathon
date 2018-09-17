@@ -65,7 +65,7 @@ The notary RPC process is available on port 10003 but there is no web UI.
 
 ### Initial joining process
 
-Nodes to request membership which is then approved by the BNO. To quickly run these steps:
+Nodes need to request membership, which is then approved by the BNO. To quickly run these steps for all nodes:
 
 ```bash
 cd deploy 

@@ -26,7 +26,10 @@ by adding code in the following packages:
 
 ## Cloning and importing the repository in IntelliJ
 
-TODO
+* Set up your machine by following the instructions here: https://docs.corda.net/getting-set-up.html
+* Clone the repository using Git (e.g. `git clone https://bitbucket.org/caismanai/derivatives-trading-network`)
+* Open the repository in IntelliJ by following the instructions here: 
+  https://docs.corda.net/tutorial-cordapp.html#opening-the-example-cordapp-in-intellij
 
 ## Running the network
 

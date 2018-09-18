@@ -4,21 +4,29 @@
 
 ## Description
 
-This project allows you to easily spin up a network of client, dealer and central counterparty nodes that can trade 
-together using CDM events. This business network is governed by a Business Network Operator.
+This is a template project for working with the CDM in Corda. This template allows you to easily create a business 
+network of Corda nodes governed by a Business Network Operator. Each node is assigned the role of client, dealer or 
+central counterparty. Each node will have the following installed:
 
-Out of the box, each node is running Corda 4 and has the following installed:
+* Corda 4
+* The Corda CDM libraries that allow you to interact with the CDM from Corda
+* A `PersistCDMEventOnLedgerFlow` showing you how to use the Corda CDM libraries to persist CDM events to the ledger
+* A web API for interacting with the nodes to allow them to perform CDM operations
 
-* The Corda CDM libraries
-* A `PersistCDMEventOnLedgerFlow` to persist CDM events to the ledger
-* A web API for interacting with the ledger (see `Interacting with the nodes`, below)
+You are expected to extend this template as part of the Barclays DerivHack hackathon. You should extend this template 
+by adding code in the following packages:
+
+* `cordapp-contracts-states/src/main/java/net/corda/yourcode`, for new states/contracts written in Java
+* `cordapp-contracts-states/src/main/kotlin/net/corda/yourcode`, for new states/contracts written in Kotlin
+* `cordapp/src/main/java/net/corda/yourcode`, for other new classes written in Java
+* `cordapp/src/main/kotlin/net/corda/yourcode`, for other new classes written in Kotlin
 
 ## Running the network
 
 There are three ways of setting up the network:
 
-* Locally, using the Node Driver
-* Locally, using `deployNodes` + `runNodes`
+* Run all nodes and their webservers in one JVM from IntelliJ
+* Run all nodes in their separate JVMs
 * In the cloud
 
 It is recommended to use the first option because it is the fastest, the least resource-intensive, it allows you to 
@@ -27,7 +35,7 @@ network and adding the Barclays trades to the ledger.
 
 Because the network is large (10 nodes), the second option may fail with an out-of-memory error.
 
-### Run all nodes and their webservers in one JVM from Intelli J
+### Run all nodes and their webservers in one JVM from IntelliJ
 
 * Mac: run the "Mac Only: Run Network" run configuration
 * Windows: run the "Windows: Run Network" JUnit test run configuration
@@ -235,12 +243,3 @@ network of dealers, clients and ccp, governed by a Business Network Operator. Pl
 * How membership in the business network is requested and granted
 * How CDM events are stored by nodes on the ledger
 * How CDM events are queried from the ledger
-
-## Extending this CorDapp
-
-If you need to extend this CorDapp, you should do so by adding code in the following locations:
-
-* `cordapp-contracts-states/src/main/java/net/corda/yourcode`, for new states/contracts written in Java
-* `cordapp-contracts-states/src/main/kotlin/net/corda/yourcode`, for new states/contracts written in Kotlin
-* `cordapp/src/main/java/net/corda/yourcode`, for other new classes written in Java
-* `cordapp/src/main/kotlin/net/corda/yourcode`, for other new classes written in Kotlin

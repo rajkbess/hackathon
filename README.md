@@ -13,6 +13,9 @@ central counterparty. Each node will have the following installed:
 * A `PersistCDMEventOnLedgerFlow` showing you how to use the Corda CDM libraries to persist CDM events to the ledger
 * A `WebApi` for interacting with the nodes to allow them to perform CDM operations
 
+If you run the nodes using the Node Driver (see below), all the trades described in DerivHack Use-Case One will be 
+automatically written to the ledger.
+
 You are expected to extend this template as part of the Barclays DerivHack hackathon. You should extend this template 
 by adding code in the following packages:
 
@@ -25,23 +28,27 @@ by adding code in the following packages:
 
 There are three ways of setting up the network:
 
-* Run all nodes and their webservers in one JVM from IntelliJ
+* Using the Node Driver (i.e. running all the nodes and their webservers in one JVM from IntelliJ)
 * Run all nodes in their separate JVMs
 * In the cloud
 
-It is recommended to use the first option because it is the fastest, the least resource-intensive, it allows you to 
-debug into the running nodes during development, and it automates the process of adding the nodes to the business 
-network and adding the Barclays trades to the ledger.
+It is recommended to use the first option because:
+
+* It is the fastest
+* It is the least resource-intensive
+* It allows you to debug into the running nodes during development
+* It automates the process of adding the nodes to the business network and writing all the trades described in 
+  DerivHack Use-Case One to the ledger
 
 Because the network is large (10 nodes), the second option may fail with an out-of-memory error.
 
-### Run all nodes and their webservers in one JVM from IntelliJ
+### Using the Node Driver (running all the nodes and their webservers in one JVM from IntelliJ)
 
 * Mac: run the "Mac Only: Run Network" run configuration
 * Windows: run the "Windows: Run Network" JUnit test run configuration
 
 This will start the Barclays clients, dealers, CCP and the BNO. It will also set up the memberships in the business 
-network and place all the Barclays trades on the ledger.
+network and writing all the trades described in DerivHack Use-Case One to the ledger.
 
 If you do not wish to place all the Barclays trades on the ledger, comment out the call to 
 `feedInTradesFromDirectoryAndConfirmAssertions` in 

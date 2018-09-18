@@ -206,7 +206,7 @@ class EndToEndTest {
     }
 
     private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {
-        val networkDefinition = EndToEndTest::class.java.getResource("/testData/network-definition.json").readText()
+        val networkDefinition = EndToEndTest::class.java.getResource("/testData/network-definition-end-to-end-test.json ").readText()
         //at the beginning there are no members
         assertEquals(0,bno.getMembershipStates().size)
 

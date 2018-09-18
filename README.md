@@ -7,15 +7,6 @@
 This project allows you to easily spin up a network of client, dealer and central counterparty nodes that can trade 
 together using CDM events. This business network is governed by a Business Network Operator.
 
-Each node is defined by the following attributes:
-
-   * `legalEntityId`
-   * `type`
-   * `name`
-   * list of (`partyId`, `account`) pairs
-   
-These attributes are used to map the `partyId`s contained in CDM events to specific Corda nodes.
-
 Out of the box, each node is running Corda 4 and has the following installed:
 
 * The Corda CDM libraries
@@ -149,7 +140,93 @@ You interact with each node using the following endpoints:
 * GET `memberApi/dealers` - Returns a list of the dealers on the network
 * GET `memberApi/ccps` - Returns a list of the central counterparties (CCPs) on the network
 
-## Sample usage
+## The CDM data model
+
+* The CDM defines a number of key classes:
+    * A `Contract` class that represents post-execution trades
+    * An `Event` class that represents events that affect these trades
+    * An `Payment` class that represents payment between two parties
+    * An `Observation` class that represents an observation of some fact (e.g. interest rate)
+    * A `Reset` class that represents the reset of a floating swap leg (would typically refer to an observation event 
+      in its lineage)
+    
+* Each `Event` has two key fields:
+    * `primitive`, defining the type of the event and the changes it causes
+    * `lineage`, defining which contracts and other events are related to this event
+
+* There are seven primitive event types, which can live in an `Event` object on their own or together with other 
+  primitive events, thus creating more complex events:
+    * `Allocation`
+    * `Exercise`
+    * `NewTrade`
+    * `Observation`
+    * `Payment`
+    * `QuantityChange`
+    * `Reset`
+    * `TermsChange`
+
+## The Corda CDM libraries
+
+The Corda CDM libraries provide utilities for adding and retrieving CDM events from the ledger, alongside other 
+functionality.
+
+### Mapping the CDM data model to Corda
+
+* Each CDM event becomes a Corda transaction
+
+* Each CDM primitive event becomes a command of this transaction
+
+* Any product of the CDM event (e.g. contract, payment, observation...) become an output state of this transaction
+
+* Any contract referenced by the `before` clause of any of the primitive events (e.g. `quantityChange`) is expected to 
+  be already stored on the ledger and will become an input state of this transaction
+
+* Any contract or event referenced by the `lineage` clause becomes a reference state of this transaction
+
+* The required signers for this transaction is the set of all the parties listed in the contracts, payments, 
+  observations, etc. of this CDM event
+  * Multiple CDM parties can map to same Corda Party. The mapping is maintained in simple wrapped map called 
+    `NetworkMap`
+
+* Metadata about the CDM event becomes an `EventMetadata` output state of this transaction
+
+### Writing events to the ledger
+
+When writing a CDM event to the ledger:
+
+* `parseEventFromJson` allows you to convert a JSON representation of an event into an `Event` object
+* `CdmTransactionBuilder` takes this `Event` object and builds a transaction containing:
+    * Input and output states corresponding to the primitives in the `Event` object
+    * Reference states corresponding to the "lineage" of the `Event`
+    * An output `EventMetadataState` state that serves to embed the CDM event ID in the transaction
+    
+* You can then sign and commit the transaction as normal
+
+You can see an example of this in 
+`cordapp/src/main/kotlin/net/corda/derivativestradingnetwork/flow/PersistCDMEventOnLedgerFlow`.
+
+### Querying the vault
+
+The `DefaultCdmVaultQuery` utility class exposes methods to retrieve specific types of CDM events from the ledger:
+
+* `getLiveContracts`
+* `getTerminatedContracts`
+* `getNovatedContracts`
+* `getResets`
+* `getPayments`
+
+### Mapping partyIds to nodes
+
+Each node is defined by the following attributes:
+
+   * `legalEntityId`
+   * `type`
+   * `name`
+   * list of (`partyId`, `account`) pairs
+   
+These attributes are used to map the `partyId`s contained in CDM events to specific Corda nodes.
+
+## Examples
 
 `integration-tests/src/test/kotlin/net/corda/derivativestraditingnetwork/integrationTests/EndToEndTest.kt` sets up a 
 network of dealers, clients and ccp, governed by a Business Network Operator. Please refer to this test suite to see:
@@ -166,8 +243,3 @@ If you need to extend this CorDapp, you should do so by adding code in the follo
 * `cordapp-contracts-states/src/main/kotlin/net/corda/yourcode`, for new states/contracts written in Kotlin
 * `cordapp/src/main/java/net/corda/yourcode`, for other new classes written in Java
 * `cordapp/src/main/kotlin/net/corda/yourcode`, for other new classes written in Kotlin
-
-## Notes
-
-* This project uses Corda 4.0 to take advantage of reference states
-* As a consequence this project uses Kotlin 1.2

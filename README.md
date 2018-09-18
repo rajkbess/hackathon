@@ -18,8 +18,8 @@ by adding code in the following packages:
 
 * `cordapp-contracts-states/src/main/java/net/corda/yourcode`, for new states/contracts written in Java
 * `cordapp-contracts-states/src/main/kotlin/net/corda/yourcode`, for new states/contracts written in Kotlin
-* `cordapp/src/main/java/net/corda/yourcode`, for other new classes written in Java
-* `cordapp/src/main/kotlin/net/corda/yourcode`, for other new classes written in Kotlin
+* `cordapp/src/main/java/net/corda/yourcode`, for other new classes (e.g. flows, web APIs) written in Java
+* `cordapp/src/main/kotlin/net/corda/yourcode`, for other new classes (e.g. flows, web APIs) written in Kotlin
 
 ## Running the network
 

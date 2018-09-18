@@ -52,7 +52,8 @@ And on Windows:
 * `gradlew clean deployNodes`
 * ``build\nodes\runnodes``
 
-Nodes need to request membership, which is then approved by the BNO. To quickly run these steps for all nodes:
+Each node other than the BNO needs to request membership, which is then approved by the BNO. To quickly run these steps 
+for all nodes:
 
 ```bash
 cd deploy 
@@ -65,8 +66,8 @@ A process for quickly deploying to a cloud server is documented in the 'deploy' 
 the README. Alternatively try editing 'build.gradle' to remove some of the nodes (_will need to rerun 
 the steps above afterwards_).  
 
-As when using `deployNodes` + `runNodes`, the nodes need to request membership, which is then approved by the BNO. To 
-quickly run these steps for all nodes:
+As when using `deployNodes` + `runNodes`, each node other than the BNO needs to request membership, which is then 
+approved by the BNO. To quickly run these steps for all nodes:
                     
 ```bash
 cd deploy 

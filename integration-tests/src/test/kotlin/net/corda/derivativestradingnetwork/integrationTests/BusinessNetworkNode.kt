@@ -82,6 +82,16 @@ abstract class BusinessNetworkNode(val driver : DriverDSL, val testIdentity : Te
     }
 
     //POSTs
+    protected fun postHeadersToUrl(url : String, headers : Map<String,String>) : Response {
+        val mediaType = MediaType.parse("text/plain")
+        val request = Request.Builder().url(url).post(RequestBody.create(mediaType, ""))
+        headers.forEach {
+            request.addHeader(it.key, it.value)
+        }
+
+        return getPatientHttpClient().newCall(request.build()).execute()
+    }
+
     protected fun postObjectAsJsonToUrl(objekt : Any, url : String) : Response {
         val jsonFormat = objectToJson(objekt)
         return postJsonToUrl(jsonFormat, url)

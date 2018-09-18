@@ -8,19 +8,19 @@
 
 
 # client request to join network
-curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition.json http://localhost:10023/api/memberApi/requestMembership
-curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition.json http://localhost:10033/api/memberApi/requestMembership
-curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition.json http://localhost:10043/api/memberApi/requestMembership
-curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition.json http://localhost:10053/api/memberApi/requestMembership
-curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition.json http://localhost:10063/api/memberApi/requestMembership
+curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json http://localhost:10023/api/memberApi/requestMembership
+curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json http://localhost:10033/api/memberApi/requestMembership
+curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json http://localhost:10043/api/memberApi/requestMembership
+curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json http://localhost:10053/api/memberApi/requestMembership
+curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json http://localhost:10063/api/memberApi/requestMembership
 
 # dealer requests to join network
-curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition.json http://localhost:10073/api/memberApi/requestMembership
-curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition.json http://localhost:10083/api/memberApi/requestMembership
-curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition.json http://localhost:10093/api/memberApi/requestMembership
+curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json http://localhost:10073/api/memberApi/requestMembership
+curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json http://localhost:10083/api/memberApi/requestMembership
+curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json http://localhost:10093/api/memberApi/requestMembership
 
 # CCP join network
-curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition.json http://localhost:10103/api/memberApi/requestMembership
+curl -X POST -H "Content-Type: application/json" --data @../integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json http://localhost:10103/api/memberApi/requestMembership
 
 
 # BNO approves membership requests

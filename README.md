@@ -159,7 +159,7 @@ You interact with each node using the following endpoints:
 
 * POST `memberApi/requestMembership` - Allows a node to request business network membership. Takes the following body 
   params:
-    * `membershipDefinitionJson` (see `integration-tests/src/test/resources/testData/network-definition.json` for an example)
+    * `membershipDefinitionJson` (see `integration-tests/src/test/resources/testData/network-definition-barclays-hackathon.json` for an example)
   
 * GET `memberApi/me` - Returns the name of the node
 * GET `memberApi/members` - Returns a list of all the parties on the network

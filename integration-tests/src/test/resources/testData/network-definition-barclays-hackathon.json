@@ -184,10 +184,4 @@
   "type" : "CLIENT",
   "account" : "C04525531162",
   "name" : "CLIENT-C04"
-}, {
-  "partyId" : "-",
-  "legalEntityId" : "1111111111111111111",
-  "type" : "REGULATOR",
-  "account" : "-",
-  "name" : "REGULATOR-R01"
 } ]

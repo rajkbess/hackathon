@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 
 class EndToEndTest {
 
-    fun setUpEnvironmentAndRunTest(test : (DriverDSL, BnoNode,MemberNode,MemberNode, MemberNode, MemberNode, MemberNode, MemberNode, MemberNode)->Unit) {
+    fun setUpEnvironmentAndRunTest(test : (DriverDSL, BnoNode,MemberNode,MemberNode, MemberNode, MemberNode, MemberNode, MemberNode, MemberNode, MemberNode)->Unit) {
         driver(DriverParameters(isDebug = true, startNodesInProcess = true,
                 extraCordappPackagesToScan = listOf(
                         "net.corda.cdmsupport",
@@ -32,8 +32,9 @@ class EndToEndTest {
             val dealer1 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D01", "", "US")), false)
             val dealer2 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D02", "", "US")), false)
             val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
+            val regulator = MemberNode(this, TestIdentity(CordaX500Name("REGULATOR-R01", "", "US")), false)
 
-            listOf(bno,client1,client2,client3,client4,dealer1,dealer2, ccp).map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }
+            listOf(bno,client1,client2,client3,client4,dealer1,dealer2,ccp,regulator).map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }
 
             //confirm all the nodes are on the network
             bno.confirmNodeIsOnTheNetwork()
@@ -44,11 +45,12 @@ class EndToEndTest {
             dealer1.confirmNodeIsOnTheNetwork()
             dealer2.confirmNodeIsOnTheNetwork()
             ccp.confirmNodeIsOnTheNetwork()
+            regulator.confirmNodeIsOnTheNetwork()
 
-            establishBusinessNetworkAndConfirmAssertions(bno, listOf(client1,client2,client3,client4,dealer1,dealer2,ccp))
+            establishBusinessNetworkAndConfirmAssertions(bno, listOf(client1,client2,client3,client4,dealer1,dealer2,ccp,regulator))
 
             //run the test
-            test(this, bno, client1, client2, client3, client4, dealer1, dealer2, ccp)
+            test(this, bno, client1, client2, client3, client4, dealer1, dealer2, ccp, regulator)
 
         }
     }
@@ -56,7 +58,7 @@ class EndToEndTest {
 
     @Test
     fun `Party A can trade with Party B`() {
-        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _ ->
+        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _, _ ->
             val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade_1.json").readText()
             assertEquals(0, client1.getLiveContracts().size)
             assertEquals(0, dealer1.getLiveContracts().size)
@@ -68,7 +70,7 @@ class EndToEndTest {
 
     @Test
     fun `Party A trades with Party B and Party C`() {
-        setUpEnvironmentAndRunTest { _, _, client1, _, _, client4, dealer1, _, _ ->
+        setUpEnvironmentAndRunTest { _, _, client1, _, _, client4, dealer1, _, _, _ ->
             val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade_1.json").readText()
             assertEquals(0, client1.getLiveContracts().size)
             assertEquals(0, client4.getLiveContracts().size)
@@ -88,7 +90,7 @@ class EndToEndTest {
 
     @Test
     fun `In-House trade`() {
-        setUpEnvironmentAndRunTest { _, _, _, client1, _, _, dealer1, _, _ ->
+        setUpEnvironmentAndRunTest { _, _, _, client1, _, _, dealer1, _, _, _ ->
             val inHouseTrade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_dealer-1/newTrade_1.json").readText()
             assertEquals(0, dealer1.getLiveContracts().size)
             dealer1.persistCDMEventOnLedger(inHouseTrade)
@@ -98,7 +100,7 @@ class EndToEndTest {
 
     @Test
     fun `Trades can be terminated`() {
-        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _ ->
+        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _, _ ->
             assertEquals(0, client1.getLiveContracts().size)
             assertEquals(0, dealer1.getLiveContracts().size)
 
@@ -134,7 +136,7 @@ class EndToEndTest {
 
     @Test
     fun `Trade amendment`() {
-        setUpEnvironmentAndRunTest { _, _, _, _, _, client4, dealer1, _, _ ->
+        setUpEnvironmentAndRunTest { _, _, _, _, _, client4, dealer1, _, _, _ ->
             assertEquals(0, client4.getLiveContracts().size)
             assertEquals(0, dealer1.getLiveContracts().size)
             val dealer1Client4Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-4/newTrade_1.json").readText()
@@ -151,7 +153,7 @@ class EndToEndTest {
 
     @Test
     fun `New trade, observation, reset, payment`() {
-        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _ ->
+        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _,_ ->
             //putting new trade in first
             val contractId = "7IE1XJPRMD"
             val contractIdScheme = "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
@@ -187,6 +189,22 @@ class EndToEndTest {
         }
     }
 
+    @Test
+    fun `New trade, reported to regulator`() {
+        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, _, regulator ->
+            val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade_1.json").readText()
+            assertEquals(0, client1.getLiveContracts().size)
+            assertEquals(0, dealer1.getLiveContracts().size)
+            dealer1.persistCDMEventOnLedger(dealer1Client1Trade)
+            assertEquals(1, client1.getLiveContracts().size)
+            assertEquals(1, dealer1.getLiveContracts().size)
+
+            assertEquals(0, regulator.getLiveContracts().size)
+            client1.shareContract("REGULATOR-R01","7IE1XJPRMD","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, regulator.getLiveContracts().size)
+        }
+    }
+
     private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {
         val networkDefinition = EndToEndTest::class.java.getResource("/testData/network-definition.json").readText()
         //at the beginning there are no members
@@ -197,7 +215,7 @@ class EndToEndTest {
         }
 
         //check members can see one another
-        membersToBe.forEach { confirmVisibility(it as MemberNode, 7, 4, 2, 1) }
+        membersToBe.forEach { confirmVisibility(it as MemberNode, 8, 4, 2, 1, 1) }
     }
 
     private fun acquireMembershipAndConfirmAssertions(bno : BnoNode, member : MemberNode, networkDefinition : String) {
@@ -207,10 +225,11 @@ class EndToEndTest {
         assertEquals(membershipsBefore+1,bno.getMembershipStates().size)
     }
 
-    private fun confirmVisibility(memberNode : MemberNode, allMembers : Int, clients : Int, dealers : Int, ccps : Int) {
+    private fun confirmVisibility(memberNode : MemberNode, allMembers : Int, clients : Int, dealers : Int, ccps : Int, regulators : Int) {
         assertEquals(allMembers,memberNode.getMembersVisibleToNode().size)
         assertEquals(clients,memberNode.getMembersVisibleToNode("clients").size)
         assertEquals(dealers,memberNode.getMembersVisibleToNode("dealers").size)
         assertEquals(ccps,memberNode.getMembersVisibleToNode("ccps").size)
+        assertEquals(regulators,memberNode.getMembersVisibleToNode("regulators").size)
     }
 }

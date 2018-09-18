@@ -10,6 +10,8 @@ import net.corda.cdmsupport.PaymentState
 import net.corda.cdmsupport.ResetState
 import net.corda.cdmsupport.network.NetworkMap
 import net.corda.core.contracts.ContractState
+import net.corda.core.identity.CordaX500Name
+import net.corda.core.identity.Party
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.startTrackedFlow
 import net.corda.core.messaging.vaultQueryBy
@@ -48,6 +50,22 @@ class WebApi(val rpcOps: CordaRPCOps) {
             val flowHandle = rpcOps.startTrackedFlow(::PersistCDMEventOnLedgerFlow, cdmEventJson, networkMap)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @POST
+    @Path("shareContract")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun shareContract(@HeaderParam("shareWith") shareWith: String, @HeaderParam("contractId") contractId: String, @HeaderParam("contractIdScheme") contractIdScheme: String,@HeaderParam("issuer") issuer: String?,@HeaderParam("partyReference") partyReference: String?) : Response {
+        return try {
+            logger.info("Sharing contract id $contractId, contract id scheme $contractIdScheme with $shareWith")
+            val party = getPartyFromThisBusinessNetwork(shareWith)
+            val flowHandle = rpcOps.startTrackedFlow(::ShareContractFlow, party, contractId, contractIdScheme, issuer, partyReference)
+            flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity("Contract shared with $shareWith.\n").build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
             Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
@@ -235,6 +253,31 @@ class WebApi(val rpcOps: CordaRPCOps) {
             logger.error(ex.message, ex)
             Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
         }
+    }
+
+    @GET
+    @Path("regulators")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun getRegulators() : Response {
+        return try {
+            val clients = getPartiesOnThisBusinessNetwork("regulator")
+            Response.status(Response.Status.OK).entity(clients).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    private fun getPartyFromThisBusinessNetwork(name : String) : Party {
+        val partiesOfThisName = getPartiesOnThisBusinessNetwork().filter { it.membershipMetadata.name == name }.map { CordaX500Name.parse(it.party) }
+        val party = when {
+            partiesOfThisName.isEmpty() -> throw PartyForThisNameNotFound(name)
+            partiesOfThisName.size == 1 -> partiesOfThisName.first()
+            else -> throw AmbiguousPartyName(name)
+        }
+
+        return rpcOps.wellKnownPartyFromX500Name(party) ?: throw PartyForThisCordaX500NameNotFound(party)
     }
 
     private fun getPartiesOnThisBusinessNetwork(role : String) : List<PartyNameAndMembershipMetadata> {

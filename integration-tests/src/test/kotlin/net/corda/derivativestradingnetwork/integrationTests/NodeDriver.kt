@@ -140,7 +140,7 @@ class NodeDriver {
 
 
     private fun getNetworkDefinitionJson() : String {
-        return NodeDriver::class.java.getResource("/testData/network-definition.json").readText()
+        return NodeDriver::class.java.getResource("/testData/network-definition-barclays-hackathon.json").readText()
     }
 
     private fun acquireMembershipAndConfirmAssertions(bno: BnoNode, member: MemberNode, networkDefinition: String) {

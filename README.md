@@ -23,7 +23,7 @@ There are three ways of setting up the network:
 
 It is recommended to use the first option because it is the fastest, the least resource-intensive, it allows you to 
 debug into the running nodes during development, and it automates the process of adding the nodes to the business 
-network.
+network and adding the Barclays trades to the ledger.
 
 Because the network is large (10 nodes), the second option may fail with an out-of-memory error.
 

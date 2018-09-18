@@ -20,7 +20,8 @@ class NodeDriver {
                         "net.corda.businessnetworks.membership.member.service",
                         "net.corda.businessnetworks.membership.member",
                         "net.corda.businessnetworks.membership.bno",
-                        "net.corda.businessnetworks.membership.states"),
+                        "net.corda.businessnetworks.membership.states",
+                        "net.corda.yourcode"),
                 networkParameters = testNetworkParameters(minimumPlatformVersion = 4))) {
 
             // ----- bno, client, dealer, ccp start nodes -------

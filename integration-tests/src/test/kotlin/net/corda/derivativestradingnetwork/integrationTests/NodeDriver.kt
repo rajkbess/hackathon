@@ -52,6 +52,9 @@ class NodeDriver {
             feedInTradesFromDirectoryAndConfirmAssertions(nonBnoNodes.map { it.testIdentity.name.organisation to it }.toMap())
 
             println("----- Network set up -----")
+            nodes.forEach {
+                println("${it.testIdentity.name.organisation} web url is ${it.webHandle.listenAddress}")
+            }
         }
     }
 

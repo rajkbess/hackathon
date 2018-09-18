@@ -36,11 +36,14 @@ network.
 
 Because the network is large (10 nodes), the second option may fail with an out-of-memory error.
 
-### Locally, using the Node Driver
+### Run all nodes and their webservers in one JVM from Intelli J
 
-Run the `Run Network` run configuration from IntelliJ.
+* On Mac just run the "Mac Only: Run Network" configuration
+* On Windows run the "Windows: Run Network" JUnit test configuration
 
-### Locally, using deployNodes + runNodes
+This will start the Barclays clients, dealers, CCP and the BNO. It will also set up the memberships in the business network and place the Barclays trades on the ledger.
+
+### Run all nodes in their separate JVMs
 
 Follow the instructions here: 
 https://docs.corda.net/tutorial-cordapp.html#running-the-example-cordapp-from-the-terminal. In summary, on Mac:

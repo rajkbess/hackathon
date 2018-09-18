@@ -1,0 +1,137 @@
+{
+  "action" : "NEW",
+  "eventDate" : "2018-09-28",
+  "eventEffect" : {
+    "contract" : [ "650562f4" ],
+    "effectedEvent" : "5cfd626c"
+  },
+  "eventIdentifier" : {
+    "identifierValue" : {
+      "identifier" : "959TPFLFQR"
+    }
+  },
+  "intent" : "NEW_TRADE",
+  "party" : [ {
+    "legalEntity" : {
+      "entityId" : "027300P01DF7BB67DP86",
+      "name" : "CCP-P01"
+    },
+    "partyId" : [ "5264151754007" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  }, {
+    "legalEntity" : {
+      "entityId" : "502900C05HITOOMU1P35",
+      "name" : "CLIENT-C05"
+    },
+    "partyId" : [ "3642822994727" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  } ],
+  "primitive" : {
+    "newTrade" : [ {
+      "contract" : {
+        "account" : [ {
+          "accountNumber" : "P01547927812",
+          "servicingParty" : "027300P01DF7BB67DP86"
+        }, {
+          "accountNumber" : "C05245065949",
+          "servicingParty" : "502900C05HITOOMU1P35"
+        } ],
+        "contractIdentifier" : [ {
+          "identifierValue" : {
+            "identifier" : "ORX4NJMFC2",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "version" : 1
+        } ],
+        "contractualProduct" : {
+          "economicTerms" : {
+            "payout" : {
+              "cashflow" : [ {
+                "payerReceiver" : {
+                  "payerPartyReference" : "5264151754007",
+                  "receiverPartyReference" : "3642822994727"
+                },
+                "cashflowAmount" : {
+                  "amount" : 10000,
+                  "currency" : "EUR"
+                },
+                "rosettaKeyValue" : "2a6a4c32"
+              } ],
+              "creditDefaultPayout" : {
+                "generalTerms" : {
+                  "buyerSeller" : {
+                    "buyerPartyReference" : "5264151754007",
+                    "sellerPartyReference" : "3642822994727"
+                  },
+                  "dateAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "EUTA" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "indexReferenceInformation" : {
+                    "indexName" : "iTraxx Europe Crossover Series 29 Version 1",
+                    "indexSeries" : 29
+                  }
+                },
+                "protectionTerms" : {
+                  "notionalAmount" : {
+                    "amount" : 20000000,
+                    "currency" : "EUR"
+                  }
+                },
+                "rosettaKeyValue" : "cbde65d0"
+              },
+              "interestRatePayout" : [ {
+                "calculationPeriodDates" : {
+                  "effectiveDate" : {
+                    "adjustableDate" : {
+                      "unadjustedDate" : "2018-10-01"
+                    }
+                  },
+                  "terminationDate" : {
+                    "unadjustedDate" : "2022-12-20"
+                  }
+                },
+                "dayCountFraction" : "ACT_360",
+                "interestRate" : {
+                  "fixedRate" : {
+                    "initialValue" : 0.010000
+                  }
+                },
+                "payerReceiver" : {
+                  "payerPartyReference" : "5264151754007",
+                  "receiverPartyReference" : "3642822994727"
+                },
+                "quantity" : {
+                  "notionalSchedule" : {
+                    "notionalStepSchedule" : {
+                      "initialValue" : 20000000,
+                      "currency" : "EUR"
+                    }
+                  }
+                },
+                "rosettaKeyValue" : "7eac636a"
+              } ]
+            },
+            "rosettaKeyValue" : "8cb52a34"
+          },
+          "productIdentification" : {
+            "primaryAssetClass" : "CREDIT",
+            "productQualifier" : "Credit_Default_Swap_Index"
+          }
+        },
+        "tradeDate" : {
+          "adjustableDate" : {
+            "unadjustedDate" : "2018-09-28"
+          }
+        },
+        "rosettaKey" : "650562f4"
+      }
+    } ]
+  },
+  "timestamp" : {
+    "creationTimestamp" : "2018-09-28T21:40:54.947"
+  },
+  "rosettaKey" : "5cfd626c"
+}

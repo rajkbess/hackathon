@@ -1,0 +1,275 @@
+{
+  "action" : "NEW",
+  "eventDate" : "2018-09-28",
+  "eventEffect" : {
+    "contract" : [ "add417de" ],
+    "effectedEvent" : "3df04307"
+  },
+  "eventIdentifier" : {
+    "identifierValue" : {
+      "identifier" : "TZYUH9OCIE"
+    }
+  },
+  "intent" : "NEW_TRADE",
+  "party" : [ {
+    "legalEntity" : {
+      "entityId" : "272200D03NJCEDFEOB38",
+      "name" : "DEALER-D03"
+    },
+    "partyId" : [ "8153870222725" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  }, {
+    "legalEntity" : {
+      "entityId" : "521700C015DIKTCI1V98",
+      "name" : "CLIENT-C01"
+    },
+    "partyId" : [ "7755090773988" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  } ],
+  "primitive" : {
+    "newTrade" : [ {
+      "contract" : {
+        "account" : [ {
+          "accountNumber" : "D03101563812",
+          "servicingParty" : "272200D03NJCEDFEOB38"
+        }, {
+          "accountNumber" : "C01232409785",
+          "servicingParty" : "521700C015DIKTCI1V98"
+        } ],
+        "contractIdentifier" : [ {
+          "identifierValue" : {
+            "identifier" : "A3ZNBAMKQT",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "version" : 1
+        } ],
+        "contractualProduct" : {
+          "economicTerms" : {
+            "payout" : {
+              "interestRatePayout" : [ {
+                "calculationPeriodDates" : {
+                  "calculationPeriodDatesAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "USNY" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "calculationPeriodFrequency" : {
+                    "period" : "M",
+                    "periodMultiplier" : 3,
+                    "rollConvention" : "_3"
+                  },
+                  "effectiveDate" : {
+                    "adjustableDate" : {
+                      "adjustedDate" : "2018-10-01",
+                      "dateAdjustments" : {
+                        "businessCenters" : {
+                          "businessCenter" : [ "USNY" ]
+                        },
+                        "businessDayConvention" : "FOLLOWING"
+                      },
+                      "unadjustedDate" : "2018-09-30"
+                    }
+                  },
+                  "id" : "floatingCalcPeriodDates",
+                  "terminationDate" : {
+                    "dateAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ "USNY" ]
+                      },
+                      "businessDayConvention" : "FOLLOWING"
+                    },
+                    "unadjustedDate" : "2019-10-01"
+                  }
+                },
+                "dayCountFraction" : "ACT_360",
+                "interestRate" : {
+                  "floatingRate" : {
+                    "floatingRateIndex" : "USD_LIBOR_BBA",
+                    "indexTenor" : {
+                      "period" : "M",
+                      "periodMultiplier" : 3
+                    },
+                    "spreadSchedule" : [ {
+                      "initialValue" : 0.003000
+                    } ],
+                    "initialRate" : 0.033175
+                  }
+                },
+                "payerReceiver" : {
+                  "payerPartyReference" : "8153870222725",
+                  "receiverPartyReference" : "7755090773988"
+                },
+                "paymentDates" : {
+                  "calculationPeriodDatesReference" : "floatingCalcPeriodDates",
+                  "payRelativeTo" : "CALCULATION_PERIOD_END_DATE",
+                  "paymentDatesAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "USNY" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "paymentFrequency" : {
+                    "period" : "M",
+                    "periodMultiplier" : 3
+                  }
+                },
+                "quantity" : {
+                  "notionalSchedule" : {
+                    "notionalStepSchedule" : {
+                      "initialValue" : 900000000.00,
+                      "currency" : "USD"
+                    }
+                  }
+                },
+                "resetDates" : {
+                  "calculationPeriodDatesReference" : "floatingCalcPeriodDates",
+                  "fixingDates" : {
+                    "period" : "D",
+                    "periodMultiplier" : -2,
+                    "dayType" : "BUSINESS",
+                    "businessCenters" : {
+                      "businessCenter" : [ "GBLO" ]
+                    },
+                    "businessDayConvention" : "NONE",
+                    "dateRelativeTo" : "resetDates"
+                  },
+                  "id" : "resetDates",
+                  "resetDatesAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "GBLO" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "resetFrequency" : {
+                    "period" : "M",
+                    "periodMultiplier" : 3
+                  },
+                  "resetRelativeTo" : "CALCULATION_PERIOD_START_DATE"
+                },
+                "rosettaKeyValue" : "4c5bcac6"
+              }, {
+                "calculationPeriodDates" : {
+                  "calculationPeriodDatesAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "USNY" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "calculationPeriodFrequency" : {
+                    "period" : "M",
+                    "periodMultiplier" : 6,
+                    "rollConvention" : "_3"
+                  },
+                  "effectiveDate" : {
+                    "adjustableDate" : {
+                      "adjustedDate" : "2018-10-01",
+                      "dateAdjustments" : {
+                        "businessCenters" : {
+                          "businessCenter" : [ "USNY" ]
+                        },
+                        "businessDayConvention" : "FOLLOWING"
+                      },
+                      "unadjustedDate" : "2018-09-30"
+                    }
+                  },
+                  "id" : "floatingCalcPeriodDates",
+                  "terminationDate" : {
+                    "dateAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ "USNY" ]
+                      },
+                      "businessDayConvention" : "FOLLOWING"
+                    },
+                    "unadjustedDate" : "2019-10-01"
+                  }
+                },
+                "dayCountFraction" : "ACT_360",
+                "interestRate" : {
+                  "floatingRate" : {
+                    "floatingRateIndex" : "USD_LIBOR_BBA",
+                    "indexTenor" : {
+                      "period" : "M",
+                      "periodMultiplier" : 6
+                    },
+                    "spreadSchedule" : [ {
+                      "initialValue" : 0.004000
+                    } ],
+                    "initialRate" : 0.025491
+                  }
+                },
+                "payerReceiver" : {
+                  "payerPartyReference" : "7755090773988",
+                  "receiverPartyReference" : "8153870222725"
+                },
+                "paymentDates" : {
+                  "calculationPeriodDatesReference" : "floatingCalcPeriodDates",
+                  "payRelativeTo" : "CALCULATION_PERIOD_END_DATE",
+                  "paymentDatesAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "USNY" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "paymentFrequency" : {
+                    "period" : "M",
+                    "periodMultiplier" : 6
+                  }
+                },
+                "quantity" : {
+                  "notionalSchedule" : {
+                    "notionalStepSchedule" : {
+                      "initialValue" : 900000000.00,
+                      "currency" : "USD"
+                    }
+                  }
+                },
+                "resetDates" : {
+                  "calculationPeriodDatesReference" : "floatingCalcPeriodDates",
+                  "fixingDates" : {
+                    "period" : "D",
+                    "periodMultiplier" : -2,
+                    "dayType" : "BUSINESS",
+                    "businessCenters" : {
+                      "businessCenter" : [ "GBLO" ]
+                    },
+                    "businessDayConvention" : "NONE",
+                    "dateRelativeTo" : "resetDates"
+                  },
+                  "id" : "resetDates",
+                  "resetDatesAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "GBLO" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "resetFrequency" : {
+                    "period" : "M",
+                    "periodMultiplier" : 6
+                  },
+                  "resetRelativeTo" : "CALCULATION_PERIOD_START_DATE"
+                },
+                "rosettaKeyValue" : "9fc08374"
+              } ]
+            },
+            "rosettaKeyValue" : "976d7906"
+          },
+          "productIdentification" : {
+            "primaryAssetClass" : "INTEREST_RATE",
+            "productQualifier" : "InterestRate_IRSwap_Basis"
+          }
+        },
+        "tradeDate" : {
+          "adjustableDate" : {
+            "unadjustedDate" : "2018-09-28"
+          }
+        },
+        "rosettaKey" : "add417de"
+      }
+    } ]
+  },
+  "timestamp" : {
+    "creationTimestamp" : "2018-09-28T21:40:54.959"
+  },
+  "rosettaKey" : "3df04307"
+}

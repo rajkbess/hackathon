@@ -1,0 +1,137 @@
+{
+  "action" : "NEW",
+  "eventDate" : "2018-10-18",
+  "eventEffect" : {
+    "contract" : [ "aa9bf0e6" ],
+    "effectedEvent" : "159acdbf"
+  },
+  "eventIdentifier" : {
+    "identifierValue" : {
+      "identifier" : "HZDVZSKJTW"
+    }
+  },
+  "intent" : "NEW_TRADE",
+  "party" : [ {
+    "legalEntity" : {
+      "entityId" : "444100D02FKCOHSINA94",
+      "name" : "DEALER-D02"
+    },
+    "partyId" : [ "5828082809415" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  }, {
+    "legalEntity" : {
+      "entityId" : "272200D03NJCEDFEOB38",
+      "name" : "DEALER-D03"
+    },
+    "partyId" : [ "9510144507251" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  } ],
+  "primitive" : {
+    "newTrade" : [ {
+      "contract" : {
+        "account" : [ {
+          "accountNumber" : "D02024214214",
+          "servicingParty" : "444100D02FKCOHSINA94"
+        }, {
+          "accountNumber" : "D03118419057",
+          "servicingParty" : "272200D03NJCEDFEOB38"
+        } ],
+        "contractIdentifier" : [ {
+          "identifierValue" : {
+            "identifier" : "I9YJKBVLVV",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "version" : 1
+        } ],
+        "contractualProduct" : {
+          "economicTerms" : {
+            "payout" : {
+              "cashflow" : [ {
+                "payerReceiver" : {
+                  "payerPartyReference" : "5828082809415",
+                  "receiverPartyReference" : "9510144507251"
+                },
+                "cashflowAmount" : {
+                  "amount" : 100000,
+                  "currency" : "USD"
+                },
+                "rosettaKeyValue" : "8571be86"
+              } ],
+              "creditDefaultPayout" : {
+                "generalTerms" : {
+                  "buyerSeller" : {
+                    "buyerPartyReference" : "5828082809415",
+                    "sellerPartyReference" : "9510144507251"
+                  },
+                  "dateAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "USNY" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "indexReferenceInformation" : {
+                    "indexName" : "CDX.NA.HY",
+                    "indexSeries" : 30
+                  }
+                },
+                "protectionTerms" : {
+                  "notionalAmount" : {
+                    "amount" : 15000000,
+                    "currency" : "USD"
+                  }
+                },
+                "rosettaKeyValue" : "c3a95135"
+              },
+              "interestRatePayout" : [ {
+                "calculationPeriodDates" : {
+                  "effectiveDate" : {
+                    "adjustableDate" : {
+                      "unadjustedDate" : "2018-10-22"
+                    }
+                  },
+                  "terminationDate" : {
+                    "unadjustedDate" : "2021-12-20"
+                  }
+                },
+                "dayCountFraction" : "ACT_360",
+                "interestRate" : {
+                  "fixedRate" : {
+                    "initialValue" : 0.050000
+                  }
+                },
+                "payerReceiver" : {
+                  "payerPartyReference" : "5828082809415",
+                  "receiverPartyReference" : "9510144507251"
+                },
+                "quantity" : {
+                  "notionalSchedule" : {
+                    "notionalStepSchedule" : {
+                      "initialValue" : 15000000,
+                      "currency" : "USD"
+                    }
+                  }
+                },
+                "rosettaKeyValue" : "a4b908b1"
+              } ]
+            },
+            "rosettaKeyValue" : "808c511e"
+          },
+          "productIdentification" : {
+            "primaryAssetClass" : "CREDIT",
+            "productQualifier" : "Credit_Default_Swap_Index"
+          }
+        },
+        "tradeDate" : {
+          "adjustableDate" : {
+            "unadjustedDate" : "2018-10-18"
+          }
+        },
+        "rosettaKey" : "aa9bf0e6"
+      }
+    } ]
+  },
+  "timestamp" : {
+    "creationTimestamp" : "2018-10-18T21:40:56.858"
+  },
+  "rosettaKey" : "159acdbf"
+}

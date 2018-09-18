@@ -51,9 +51,7 @@ class NodeDriver {
             println("Placing trades on the ledger")
             feedInTradesFromDirectoryAndConfirmAssertions(nonBnoNodes.map { it.testIdentity.name.organisation to it }.toMap())
 
-            println("")
-
-            println("Network set up")
+            println("----- Network set up -----")
         }
     }
 
@@ -85,7 +83,19 @@ class NodeDriver {
             updateCounter(event, partyIdToName, nameToCounter)
         }
 
-        println("Expect to have this population of trades $nameToCounter")
+        println("Expect to have this population of trades $nameToCounter, checking...")
+        assertEquals(162, nameToNode.get("CCP-P01")!!.getLiveContracts().size)
+
+        assertEquals(8, nameToNode.get("CLIENT-C01")!!.getLiveContracts().size)
+        assertEquals(7, nameToNode.get("CLIENT-C02")!!.getLiveContracts().size)
+        assertEquals(10, nameToNode.get("CLIENT-C03")!!.getLiveContracts().size)
+        assertEquals(15, nameToNode.get("CLIENT-C04")!!.getLiveContracts().size)
+        assertEquals(8, nameToNode.get("CLIENT-C05")!!.getLiveContracts().size)
+
+        assertEquals(55, nameToNode.get("DEALER-D01")!!.getLiveContracts().size)
+        assertEquals(62, nameToNode.get("DEALER-D02")!!.getLiveContracts().size)
+        assertEquals(59, nameToNode.get("DEALER-D03")!!.getLiveContracts().size)
+        println("Ledger content matches")
     }
 
     private fun updateCounter(event : Event, partyIdToName : Map<String,String>, nameToCounter : MutableMap<String,Int>) {

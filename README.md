@@ -11,7 +11,7 @@ central counterparty. Each node will have the following installed:
 * Corda 4
 * The Corda CDM libraries that allow you to interact with the CDM from Corda
 * A `PersistCDMEventOnLedgerFlow` showing you how to use the Corda CDM libraries to persist CDM events to the ledger
-* A web API for interacting with the nodes to allow them to perform CDM operations
+* A `WebApi` for interacting with the nodes to allow them to perform CDM operations
 
 You are expected to extend this template as part of the Barclays DerivHack hackathon. You should extend this template 
 by adding code in the following packages:

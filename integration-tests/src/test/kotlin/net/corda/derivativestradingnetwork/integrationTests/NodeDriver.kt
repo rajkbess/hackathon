@@ -39,8 +39,13 @@ class NodeDriver {
             val nonBnoNodes = listOf(client1, client2, client3, client4, client5, dealer1, dealer2, dealer3, ccp)
             val nodes = listOf(bno) + nonBnoNodes
 
-            nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.forEach { it.waitForWebToStart() }
-            nodes.forEach { node -> node.confirmNodeIsOnTheNetwork() }
+            nodes
+                    .map { it.startCoreAsync() }
+                    .map { it.waitForCoreToStart() }
+                    .map { it.startWebAsync() }
+                    .map { it.waitForWebToStart() }
+                    .forEach { node -> node.confirmNodeIsOnTheNetwork() }
+
             establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes)
         }
     }
@@ -55,7 +60,7 @@ class NodeDriver {
         }
 
         //check members can see one another
-        membersToBe.forEach { confirmVisibility(it as MemberNode, 7, 4, 2, 1) }
+        membersToBe.forEach { confirmVisibility(it as MemberNode, 9, 5, 3, 1) }
     }
 
     private fun acquireMembershipAndConfirmAssertions(bno: BnoNode, member: MemberNode, networkDefinition: String) {

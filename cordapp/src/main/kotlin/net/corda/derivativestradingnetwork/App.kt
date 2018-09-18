@@ -134,6 +134,19 @@ class WebApi(val rpcOps: CordaRPCOps) {
     }
 
     @GET
+    @Path("me")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun getMe() : Response {
+        return try {
+            val me = rpcOps.nodeInfo().legalIdentities[0].name
+            Response.status(Response.Status.OK).entity(me).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @GET
     @Path("members")
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))

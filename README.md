@@ -30,7 +30,16 @@ The EndToEndTest.kt file sets up a network of dealers, clients and ccp, governed
 
 ## Running the whole network
 
-### Building and starting nodes
+### There are multiple options how to run the nodes for demo, development or test purposes
+
+#### Option 1: Run all nodes and their webservers in one JVM from Intelli J
+
+* On Mac just run the "Mac Only: Run Network" configuration
+* On Windows run the "Windows: Run Network" JUnit test configuration
+
+This will start the Barclays clients, dealers, CCP and the BNO. It will also set up the memberships in the business network and place the Barclays trades on the ledger.
+
+#### Option 2: Run all nodes in their separate JVMs
 
 There are two options. You can use the well-known sequence of:
 
@@ -63,7 +72,7 @@ If all is running correctly the following will be available:
 
 The notary RPC process is available on port 10003 but there is no web UI.
 
-### Initial joining process
+#### Option 2 - initial joining process
 
 Nodes need to request membership, which is then approved by the BNO. To quickly run these steps for all nodes:
 

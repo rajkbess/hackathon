@@ -1,12 +1,14 @@
 package net.corda.derivativestradingnetwork.integrationTests
 
+import net.corda.cdmsupport.eventparsing.parseEventFromJson
 import net.corda.core.identity.CordaX500Name
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.*
-import org.junit.Test
+import java.io.File
 import kotlin.test.assertEquals
 
+//You will struggle to run this from Intelli J on windows. On windows run the WrapperAroundNodeDriver as a JUnit test instead
 fun main(args: Array<String>) {
     NodeDriver().runNetwork()
 }
@@ -41,11 +43,13 @@ class NodeDriver {
             nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.forEach { it.waitForWebToStart() }
             nodes.forEach { node -> node.confirmNodeIsOnTheNetwork() }
             establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes)
+
+            println("Network set up")
         }
     }
 
     private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>) {
-        val networkDefinition = NodeDriver::class.java.getResource("/testData/network-definition.json").readText()
+        val networkDefinition = getNetworkDefinitionJson()
         //at the beginning there are no members
         assertEquals(0, bno.getMembershipStates().size)
 
@@ -54,7 +58,25 @@ class NodeDriver {
         }
 
         //check members can see one another
-        membersToBe.forEach { confirmVisibility(it as MemberNode, 7, 4, 2, 1) }
+        membersToBe.forEach { confirmVisibility(it as MemberNode, 9, 5, 3, 1) }
+    }
+
+    private fun feedInTradesFromDirectoryAndConfirmAssertions(directoryWithTrades : File) {
+        directoryWithTrades.listFiles { file, name -> name.endsWith(".json",true)}.forEach {
+            val event = parseEventFromJson(it.readText())
+            val partyOne = event.party[0].partyId.first() //only one party initiates the process of putting the trade on the ledger. the other party will sign this
+
+
+        }
+    }
+
+    private fun createMapFromPartyIdToName(networkDefinition : String) {
+
+    }
+
+
+    private fun getNetworkDefinitionJson() : String {
+        return NodeDriver::class.java.getResource("/testData/network-definition.json").readText()
     }
 
     private fun acquireMembershipAndConfirmAssertions(bno: BnoNode, member: MemberNode, networkDefinition: String) {

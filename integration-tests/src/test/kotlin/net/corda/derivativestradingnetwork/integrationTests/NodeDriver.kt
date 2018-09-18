@@ -43,9 +43,9 @@ class NodeDriver {
             val nonBnoNodes = listOf(client1, client2, client3, client4, client5, dealer1, dealer2, dealer3, ccp)
             val nodes = listOf(bno) + nonBnoNodes
 
-            nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.forEach { it.waitForWebToStart() }
-            nodes.forEach { node -> node.confirmNodeIsOnTheNetwork() }
+            nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }.forEach { it.confirmNodeIsOnTheNetwork() }
             println("Establishing business network")
+
             establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes)
 
             println("Placing trades on the ledger")

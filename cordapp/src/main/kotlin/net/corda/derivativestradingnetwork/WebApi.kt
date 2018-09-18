@@ -5,15 +5,23 @@ import com.fasterxml.jackson.jaxrs.annotation.JacksonFeatures
 import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.cdmsupport.CDMContractState
+import net.corda.cdmsupport.PaymentState
+import net.corda.cdmsupport.ResetState
 import net.corda.cdmsupport.network.NetworkMap
+import net.corda.core.contracts.ContractState
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.startTrackedFlow
+import net.corda.core.messaging.vaultQueryBy
+import net.corda.core.node.services.Vault
+import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import net.corda.derivativestradingnetwork.UtilParsers.Companion.parseMembershipDefinitionJson
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
 import net.corda.derivativestradingnetwork.flow.*
 import net.corda.webserver.services.WebServerPluginRegistry
+import org.isda.cdm.Contract
 import org.slf4j.Logger
 import java.util.function.Function
 import javax.ws.rs.*
@@ -91,6 +99,30 @@ class WebApi(val rpcOps: CordaRPCOps) {
         return createResponseToTargetedQuery(VaultTargetedQueryType.PAYMENTS,contractId,contractIdScheme,issuer,partyReference)
     }
 
+    @GET
+    @Path("cdmContractsAudit")
+    @Produces(MediaType.TEXT_PLAIN)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun cdmContractsAudit() : Response {
+        return createResponseToContractsAuditQuery<CDMContractState>()
+    }
+
+    @GET
+    @Path("cdmResetsAudit")
+    @Produces(MediaType.TEXT_PLAIN)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun cdmResetsAudit() : Response {
+        return createResponseToContractsAuditQuery<ResetState>()
+    }
+
+    @GET
+    @Path("cdmPaymentsAudit")
+    @Produces(MediaType.TEXT_PLAIN)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun cdmPaymentsAudit() : Response {
+        return createResponseToContractsAuditQuery<PaymentState>()
+    }
+
     private fun createResponseToTargetedQuery(vaultTargetedQueryType: VaultTargetedQueryType, contractId: String, contractIdScheme: String, issuer: String?, partyReference: String?) : Response {
         return try {
             val flowHandle = rpcOps.startTrackedFlow(::VaultTargetedQueryFlow, vaultTargetedQueryType, contractId, contractIdScheme, issuer, partyReference)
@@ -111,6 +143,13 @@ class WebApi(val rpcOps: CordaRPCOps) {
             logger.error(ex.message, ex)
             Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
         }
+    }
+
+    private inline fun <reified T : ContractState> createResponseToContractsAuditQuery() : Response {
+        val allStatesCriteria = QueryCriteria.VaultQueryCriteria(status = Vault.StateStatus.ALL)
+        val stateAndRefs = rpcOps.vaultQueryBy<T>(allStatesCriteria).states
+        val states = stateAndRefs.map { it.state.data }
+        return Response.status(Response.Status.OK).entity(states.toString()).build()
     }
 
     //######## Membership related REST endpoints #############

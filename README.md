@@ -24,6 +24,10 @@ by adding code in the following packages:
 * `cordapp/src/main/java/net/corda/yourcode`, for other new classes (e.g. flows, web APIs) written in Java
 * `cordapp/src/main/kotlin/net/corda/yourcode`, for other new classes (e.g. flows, web APIs) written in Kotlin
 
+## Cloning and importing the repository in IntelliJ
+
+TODO
+
 ## Running the network
 
 There are three ways of setting up the network:
@@ -145,6 +149,10 @@ You interact with each node using the following endpoints:
     * `contractIdScheme`
     * `issuer`
     * `partyReference`
+    
+* GET `memberApi/cdmContractsAudit` - Returns a list of the node's consumed (historic) and current `CDMContractState`s
+* GET `memberApi/cdmResetsAudit` - Returns a list of the node's consumed (historic) and current `ResetState`s
+* GET `memberApi/cdmPaymentsAudit` - Returns a list of the node's consumed (historic) and current `PaymentState`s
 
 * POST `memberApi/requestMembership` - Allows a node to request business network membership. Takes the following body 
   params:

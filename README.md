@@ -38,10 +38,15 @@ Because the network is large (10 nodes), the second option may fail with an out-
 
 ### Run all nodes and their webservers in one JVM from Intelli J
 
-* On Mac just run the "Mac Only: Run Network" configuration
-* On Windows run the "Windows: Run Network" JUnit test configuration
+* Mac: run the "Mac Only: Run Network" run configuration
+* Windows: run the "Windows: Run Network" JUnit test run configuration
 
-This will start the Barclays clients, dealers, CCP and the BNO. It will also set up the memberships in the business network and place the Barclays trades on the ledger.
+This will start the Barclays clients, dealers, CCP and the BNO. It will also set up the memberships in the business 
+network and place all the Barclays trades on the ledger.
+
+If you do not wish to place all the Barclays trades on the ledger, comment out the call to 
+`feedInTradesFromDirectoryAndConfirmAssertions` in 
+`integration-tests/src/test/kotlin/net/corda/derivativestradingnetwork/NodeDriver.kt`.
 
 ### Run all nodes in their separate JVMs
 

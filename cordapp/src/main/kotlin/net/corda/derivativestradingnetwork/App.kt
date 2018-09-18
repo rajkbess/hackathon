@@ -2,8 +2,6 @@ package net.corda.derivativestradingnetwork
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.jaxrs.annotation.JacksonFeatures
-import com.google.common.reflect.TypeToken
-import com.google.gson.*
 import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
@@ -12,13 +10,11 @@ import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.startTrackedFlow
 import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
-import net.corda.derivativestradingnetwork.entity.MemberAccountDefinition
+import net.corda.derivativestradingnetwork.UtilParsers.Companion.parseMembershipDefinitionJson
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
 import net.corda.derivativestradingnetwork.flow.*
 import net.corda.webserver.services.WebServerPluginRegistry
 import org.slf4j.Logger
-import java.lang.reflect.Type
-import java.time.Instant
 import java.util.function.Function
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
@@ -211,25 +207,6 @@ class WebApi(val rpcOps: CordaRPCOps) {
         val partyIdAndAccountPairs = ourMemberAccounts.map { it.partyId to it.account }.toMap()
 
         return MembershipMetadata(partyIdAndAccountPairs, legalEntityId, role, name)
-    }
-
-    private fun parseMembershipDefinitionJson(membershipDefinitionJson : String) : List<MemberAccountDefinition> {
-        val desiredType = object : TypeToken<List<MemberAccountDefinition>>() {}.type
-        return getSuitableGson().fromJson<List<MemberAccountDefinition>>(membershipDefinitionJson,desiredType)
-    }
-
-    protected fun getSuitableGson() : Gson {
-        return GsonBuilder().registerTypeAdapter(Instant::class.java, object : JsonSerializer<Instant> {
-
-            override fun serialize(src: Instant?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-                return JsonPrimitive(src?.epochSecond ?: 0)
-            }
-
-        }).registerTypeAdapter(Instant::class.java, object : JsonDeserializer<Instant> {
-            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Instant {
-                return Instant.ofEpochSecond(json!!.asLong)
-            }
-        }).create()
     }
 }
 

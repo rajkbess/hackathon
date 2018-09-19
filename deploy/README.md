@@ -75,9 +75,20 @@ whilst the nodes are starting. It can be closed afterwards.
 ## Joining the network 
 
 Run the seeder to request and approve membership for each of the nodes and also setup initial
-test trades
+test trades.
 
 ```bash
 java -jar lib/seeder.jar 
  ``` 
+or 
+
+```bash
+java -jar lib/seeder.jar <stagename>
+```
+where stagename is: 
+
+*  membership - scripts members joining network
+*  trades - load example set of trades 
+*  status - run status checks over the nodes 
+ 
 

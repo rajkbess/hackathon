@@ -35,6 +35,10 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         return getContracts("terminatedCDMContracts")
     }
 
+    fun getNovatedContracts() : List<*> {
+        return getContracts("novatedCDMContracts")
+    }
+
     fun getResets(contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
         return getContractEvents("CDMResets", contractId, contractIdScheme, issuer, partyReference)
     }

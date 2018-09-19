@@ -205,6 +205,47 @@ class EndToEndTest {
         }
     }
 
+    @Test
+    fun `New trade, novate by a CCP`() {
+        setUpEnvironmentAndRunTest { _, _, client1, _, _, _, dealer1, _, ccp, _ ->
+            assertEquals(0, client1.getLiveContracts().size)
+            assertEquals(0, dealer1.getLiveContracts().size)
+            assertEquals(0, ccp.getLiveContracts().size)
+
+            //send a new trade in between client 1 and dealer 1
+            val dealer1Client1Trade = EndToEndTest::class.java.getResource("/testData/cdmEvents/dealer-1_client-1/newTrade_1.json").readText()
+            dealer1.persistCDMEventOnLedger(dealer1Client1Trade)
+            assertEquals(1, client1.getLiveContracts().size)
+            assertEquals(1, dealer1.getLiveContracts().size)
+
+            assertEquals(0, ccp.getLiveContracts().size)
+            assertEquals(0, client1.getNovatedContracts().size)
+            assertEquals(0, dealer1.getNovatedContracts().size)
+            assertEquals(0, ccp.getNovatedContracts().size)
+
+            //share it with the CCP
+            client1.shareContract("CCP-P01","7IE1XJPRMD","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, ccp.getLiveContracts().size)
+            assertEquals(1, client1.getLiveContracts().size)
+            assertEquals(1, dealer1.getLiveContracts().size)
+            assertEquals(0, client1.getNovatedContracts().size)
+            assertEquals(0, dealer1.getNovatedContracts().size)
+            assertEquals(0, ccp.getNovatedContracts().size)
+
+            //let the CCP novate it
+            val novation = EndToEndTest::class.java.getResource("/testData/cdmEvents/ccp/novations/dealer-1_client-1-novation.json").readText()
+            ccp.persistCDMEventOnLedger(novation)
+            assertEquals(2, ccp.getLiveContracts().size) //1 trade with client 1 and one with dealer 1
+            assertEquals(1, client1.getLiveContracts().size) //1 trade with ccp
+            assertEquals(1, dealer1.getLiveContracts().size) //1 trade with ccp
+            assertEquals(1, client1.getNovatedContracts().size) //the old trade between client 1 and dealer 1
+            assertEquals(1, dealer1.getNovatedContracts().size) //the old trade between client 1 and dealer 1
+            assertEquals(0, ccp.getNovatedContracts().size) //the ccp is not a participant on the novated trade so it won't store it to its vault
+
+
+        }
+    }
+
     private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {
         val networkDefinition = EndToEndTest::class.java.getResource("/testData/network-definition-end-to-end-test.json ").readText()
         //at the beginning there are no members

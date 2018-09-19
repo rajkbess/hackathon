@@ -102,6 +102,14 @@ class WebApi(val rpcOps: CordaRPCOps) {
     }
 
     @GET
+    @Path("novatedCDMContracts")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun novatedCDMContracts() : Response {
+        return createResponseToContractsQuery(VaultQueryType.NOVATED_CONTRACTS)
+    }
+
+    @GET
     @Path("CDMResets")
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))

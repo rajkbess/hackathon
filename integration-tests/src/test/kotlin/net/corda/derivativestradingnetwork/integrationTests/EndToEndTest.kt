@@ -241,8 +241,6 @@ class EndToEndTest {
             assertEquals(1, client1.getNovatedContracts().size) //the old trade between client 1 and dealer 1
             assertEquals(1, dealer1.getNovatedContracts().size) //the old trade between client 1 and dealer 1
             assertEquals(0, ccp.getNovatedContracts().size) //the ccp is not a participant on the novated trade so it won't store it to its vault
-
-
         }
     }
 

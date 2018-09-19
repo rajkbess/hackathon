@@ -71,6 +71,13 @@ take a while (10 - 15 minutes) to start all nodes. All output will echo to this 
 it is recommended that the console window is kept visible on the host (avoid sleeps)
 whilst the nodes are starting. It can be closed afterwards.
 
+Note, message like the one below can be safely ignored.
+<pre>
+Could not start Jolokia agent: java.lang.IllegalArgumentException: Cannot find net.corda.node.JolokiaSlf4jAdapter
+Listening for transport dt_socket at address: 5009
+Could not start Jolokia agent: java.net.BindException: Address already in use
+</pre>
+
 
 ## Joining the network 
 

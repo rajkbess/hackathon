@@ -11,10 +11,11 @@ central counterparty. Each node will have the following installed:
 * Corda 4
 * The Corda CDM libraries that allow you to interact with the CDM from Corda
 * A `PersistCDMEventOnLedgerFlow` showing you how to use the Corda CDM libraries to persist CDM events to the ledger
+* A `ShareContractFlow` showing you how to share a CDM contract on the ledger (previously created by PersistCDMEventOnLedgerFlow) with another party
 * A `WebApi` for interacting with the nodes to allow them to perform CDM operations
 
 If you run the nodes using the Node Driver (see below), all the trades described in DerivHack Use-Case One will be 
-automatically written to the ledger.
+automatically written to the ledger using the above mentioned `PersistCDMEventOnLedgerFlow`.
 
 You are expected to extend this template as part of the Barclays DerivHack hackathon. You should extend this template 
 by adding code in the following packages:
@@ -168,19 +169,26 @@ You interact with each node using the following endpoints:
 * POST `memberApi/persistCDMEvent` - Writes a CDM event to the ledger. Takes the following body params:
     * `cdmEventJson` (see `integration-tests/src/test/resources/testData/cdmEvents/dealer-1_client-4/newTrade_1.json` for an example)
 
+* POST `memberApi/shareContract` - Shares given contract with given party. E.g. share a swap trade with a regulator. Takes the following header params:
+    * `shareWith` (the name of the party to share with, e.g. CCP-P01)
+    * `contractId`
+    * `contractIdScheme`
+    * optionally `issuer`
+    * optionally `partyReference`    
+    
 * GET `memberApi/liveCDMContracts` - Returns a list of the node's live contracts
 * GET `memberApi/terminatedCDMContracts` - Returns a list of the node's terminated contracts
 * GET `memberApi/CDMResets` - Returns a filtered list of the node's resets. Takes the following querystring params:
     * `contractId`
     * `contractIdScheme`
-    * `issuer`
-    * `partyReference`
+    * optionally `issuer`
+    * optionally `partyReference`
 
 * GET `memberApi/CDMPayments` - Returns a filtered list of the node's payments. Takes the following querystring params:
     * `contractId`
     * `contractIdScheme`
-    * `issuer`
-    * `partyReference`
+    * optionally `issuer`
+    * optionally `partyReference`
     
 * GET `memberApi/cdmContractsAudit` - Returns a list of the node's consumed (historic) and current `CDMContractState`s
 * GET `memberApi/cdmResetsAudit` - Returns a list of the node's consumed (historic) and current `ResetState`s

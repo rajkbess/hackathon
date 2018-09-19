@@ -22,3 +22,5 @@
 ./runNode.sh DEALER-D02 10080 && sleep 60
 ./runNode.sh DEALER-D03 10090 && sleep 60
 
+echo "All nodes started"
+

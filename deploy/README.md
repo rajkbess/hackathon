@@ -32,6 +32,8 @@ _note, deployNodes will take a few minutes_
 
 ## Running nodes
 
+### Single Node
+
 The use of 'build/nodes/runnodes' is not recommended. It has startup order 
 problems when starting so many nodes and web servers. Instead use the bash scripts in the 
 'deploy' directory (**you must run these from this directory**). To start a single 
@@ -43,14 +45,32 @@ node run
 
 This script will shutdown any existing services for the node and then start the node followed by 
 its web server. The script will echo to the console, but for details as to what is going on 
-refer to the logs, which in this example are at 'build/nodes/CLIENT-C01/logs'
+refer to the logs, which in this example are at 'build/nodes/CLIENT-C01/logs'.
 
 Note that the port number must match that defined in node configuration (see the 'deployNodes' task
 in 'build.gradle'). 
 
 Once started the web console should be accessible, in this case at http://mycloudserver:10023
 
-The 'runAll.sh' script will start all nodes. 
+### All nodes
+
+Force everything to shutdown with the rather brutal killall. 
+
+```bash
+killall -9 java 
+```
+
+Then 
+
+```bash
+./runAll.sh
+```
+
+The script will start all nodes sequentially and has simple timing loops to control startup. It will 
+take a while (10 - 15 minutes) to start all nodes. All output will echo to this console and for reliability 
+it is recommended that the console window is kept visible on the host (avoid sleeps)
+whilst the nodes are starting. It can be closed afterwards.
+
 
 ## Joining the network 
 

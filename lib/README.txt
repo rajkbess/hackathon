@@ -6,3 +6,6 @@ correct path to your call to Java:
    java -javaagent:path-to-quasar-jar.jar ...
 
 See the Quasar docs for more information: http://docs.paralleluniverse.co/quasar/
+
+The seeder.jar is a command line tool for setting up data on a new network. See notes in the
+main README file and also https://bitbucket.org/ianmorganr3/derivatives-trading-network-seeder for more detail.

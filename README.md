@@ -75,26 +75,29 @@ And on Windows:
 * ``build\nodes\runnodes``
 
 Each node other than the BNO needs to request membership, which is then approved by the BNO. To quickly run these steps 
-for all nodes:
+for all nodes and also load the example trades
 
 ```bash
-cd deploy 
-./joinNetwork.sh 
+java -jar lib\seeder.jar 
 ```
+
+After these steps are completed the network should be in the same state as the 'Node Driver' process
 
 ### In the cloud
 
 A process for quickly deploying to a cloud server is documented in the 'deploy' folder, simply refer to 
-the README. Alternatively try editing 'build.gradle' to remove some of the nodes (_will need to rerun 
-the steps above afterwards_).  
+the README.  
 
 As when using `deployNodes` + `runNodes`, each node other than the BNO needs to request membership, which is then 
 approved by the BNO. To quickly run these steps for all nodes:
                     
+
 ```bash
-cd deploy 
-./joinNetwork.sh 
+java -jar lib\seeder.jar 
 ```
+
+After these steps are completed the network should be in the same state as the 'Node Driver' process
+
 
 ## Interacting with the nodes
 
@@ -131,6 +134,32 @@ When running the nodes using `deployNodes` + `runNodes`, the nodes will be acces
 * CCP-P01:      `http://localhost:10103`
 
 You can check the identity of each node by hitting the `http://localhost:100XX/api/memberApi/me` endpoint.
+
+You can also run the seeder.jar
+
+```bash
+java -jar lib\seeder.jar status
+```
+
+### Using the seeder.jar to populate data 
+
+This is a runable JAR that simply calls the REST endpoints to seed data 
+
+```bash
+java -jar lib/seeder.jar 
+```
+or 
+
+```bash
+java -jar lib/seeder.jar <stagename>
+```
+where stagename is: 
+
+*  membership - scripts member joining network
+*  trades - load example set of trades 
+*  status - run status checks over the nodes
+
+_See https://bitbucket.org/derivatives-trading-network-seeder/ for source_ 
 
 ### Node endpoints
 

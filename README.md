@@ -239,21 +239,21 @@ functionality.
 * Each CDM event becomes a Corda transaction
 
 * Each CDM primitive event becomes a command of this transaction. The possible commands are:
-  * `Allocation`
-  * `Exercise`
-  * `NewTrade`
-  * `Observation`
-  * `Payment`
-  * `QuantityChange`
-  * `Reset`
-  * `TermsChange`
+    * `Allocation`
+    * `Exercise`
+    * `NewTrade`
+    * `Observation`
+    * `Payment`
+    * `QuantityChange`
+    * `Reset`
+    * `TermsChange`
 
 * Any product of the CDM event (e.g. contract, payment, observation...) become an output state of this transaction. The 
   possible states are:
-  * `CDMContractState`
-  * `PaymentState`
-  * `ObservationState`
-  * `ResetState`
+    * `CDMContractState`
+    * `PaymentState`
+    * `ObservationState`
+    * `ResetState`
 
 * Any contract referenced by the `before` clause of any of the primitive events (e.g. `quantityChange`) is expected to 
   be already stored on the ledger and will become an input state of this transaction

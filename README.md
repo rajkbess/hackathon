@@ -282,11 +282,16 @@ Each node is defined by the following attributes:
    
 These attributes are used to map the `partyId`s contained in CDM events to specific Corda nodes.
 
-## Examples
+## Example usage
 
-`integration-tests/src/test/kotlin/net/corda/derivativestraditingnetwork/integrationTests/EndToEndTest.kt` sets up a 
-network of dealers, clients and ccp, governed by a Business Network Operator. Please refer to this test suite to see:
+See `integration-tests/src/test/kotlin/net/corda/derivativestraditingnetwork/integrationTests/EndToEndTest.kt` to see 
+an example of how to interact with the CDM from Corda:
 
-* How membership in the business network is requested and granted
-* How CDM events are stored by nodes on the ledger
-* How CDM events are queried from the ledger
+* `establishBusinessNetworkAndConfirmAssertions` shows up to set up the network of dealers, clients and central 
+  counterparties and have them request business network membership from the Business Network Operator
+* `persistCDMEventOnLedger` persists a CDM event on ledger as follows:
+    * It takes the JSON representing a CDM event as input
+    * It sends this JSON to the node's `/memberApi/persistCDMEvent` API endpoint
+    * This endpoint invokes the `PersistCDMEventOnLedgerFlow` to store the CDM event on-ledger
+* `getLiveContracts` queries for all the current live-contract CDM events stored on the ledger by hitting the node's 
+  `/memberApi/liveCDMContracts` API endpoint

@@ -230,9 +230,22 @@ functionality.
 
 * Each CDM event becomes a Corda transaction
 
-* Each CDM primitive event becomes a command of this transaction
+* Each CDM primitive event becomes a command of this transaction. The possible commands are:
+  * `Allocation`
+  * `Exercise`
+  * `NewTrade`
+  * `Observation`
+  * `Payment`
+  * `QuantityChange`
+  * `Reset`
+  * `TermsChange`
 
-* Any product of the CDM event (e.g. contract, payment, observation...) become an output state of this transaction
+* Any product of the CDM event (e.g. contract, payment, observation...) become an output state of this transaction. The 
+  possible states are:
+  * `CDMContractState`
+  * `PaymentState`
+  * `ObservationState`
+  * `ResetState`
 
 * Any contract referenced by the `before` clause of any of the primitive events (e.g. `quantityChange`) is expected to 
   be already stored on the ledger and will become an input state of this transaction
@@ -244,7 +257,7 @@ functionality.
   * Multiple CDM parties can map to same Corda Party. The mapping is maintained in simple wrapped map called 
     `NetworkMap`
 
-* Metadata about the CDM event becomes an `EventMetadata` output state of this transaction
+* Metadata about the CDM event becomes an output `EventMetadataState` state of this transaction
 
 ### Writing events to the ledger
 

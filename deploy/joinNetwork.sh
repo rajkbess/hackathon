@@ -4,6 +4,8 @@
 # Run this to request and approve membership for each node
 # Only needs to be run once.
 #
+# Alternatively use seeder.jar (see notes in main README)
+#
 ###############################################################################
 
 

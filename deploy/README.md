@@ -34,7 +34,7 @@ _note, deployNodes will take a few minutes_
 
 The use of 'build/nodes/runnodes' is not recommended. It has startup order 
 problems when starting so many nodes and web servers. Instead use the bash scripts in the 
-'deploy' directory (_you must run these from this directory_). To start a single 
+'deploy' directory (**you must run these from this directory**). To start a single 
 node run 
 
 ```bash
@@ -54,9 +54,10 @@ The 'runAll.sh' script will start all nodes.
 
 ## Joining the network 
 
-Run the script below to request and approve membership for each of the nodes
+Run the seeder to request and approve membership for each of the nodes and also setup initial
+test trades
 
 ```bash
-./joinNetwork.sh
-``` 
+java -jar lib/seeder.jar 
+ ``` 
 

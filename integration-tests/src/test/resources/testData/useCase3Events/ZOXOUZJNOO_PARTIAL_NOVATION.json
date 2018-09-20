@@ -1,0 +1,268 @@
+{
+  "action" : "NEW",
+  "effectiveDate" : "2018-11-06",
+  "eventDate" : "2018-11-05",
+  "eventEffect" : {
+    "contract" : [ "8be62e54", "47bf497e" ],
+    "effectedContractReference" : [ "c51b5e6c" ],
+    "effectedEvent" : "d0f83c1d",
+    "payment" : [ "775f9e3f" ]
+  },
+  "eventIdentifier" : {
+    "identifierValue" : {
+      "identifier" : "IHSLM0VBDW"
+    }
+  },
+  "intent" : "PARTIAL_NOVATION",
+  "lineage" : {
+    "contractReference" : [ {
+      "identifierValue" : {
+        "identifier" : "ZOXOUZJNOO",
+        "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+      },
+      "version" : 1
+    } ],
+    "eventReference" : [ {
+      "identifierValue" : {
+        "identifier" : "L9IBUG7E8J"
+      }
+    } ]
+  },
+  "party" : [ {
+    "legalEntity" : {
+      "entityId" : "444100D02FKCOHSINA94",
+      "name" : "DEALER-D02"
+    },
+    "partyId" : [ "9086125328009" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  }, {
+    "legalEntity" : {
+      "entityId" : "027300P01DF7BB67DP86",
+      "name" : "CCP-P01"
+    },
+    "partyId" : [ "5264151754007" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  }, {
+    "legalEntity" : {
+      "entityId" : "897100C03M8REFIAAP62",
+      "name" : "CLIENT-C03"
+    },
+    "partyId" : [ "6896368109418" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  } ],
+  "primitive" : {
+    "newTrade" : [ {
+      "contract" : {
+        "account" : [ {
+          "accountNumber" : "C03628152908",
+          "servicingParty" : "897100C03M8REFIAAP62"
+        }, {
+          "accountNumber" : "P01547927812",
+          "servicingParty" : "027300P01DF7BB67DP86"
+        } ],
+        "contractIdentifier" : [ {
+          "identifierValue" : {
+            "identifier" : "GH5D6N6TVA",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "version" : 1
+        } ],
+        "contractualProduct" : {
+          "economicTerms" : {
+            "payout" : {
+              "creditDefaultPayout" : {
+                "generalTerms" : {
+                  "buyerSeller" : {
+                    "buyerPartyReference" : "6896368109418",
+                    "sellerPartyReference" : "5264151754007"
+                  },
+                  "dateAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "EUTA" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "indexReferenceInformation" : {
+                    "indexName" : "iTraxx Europe Crossover Series 29 Version 1",
+                    "indexSeries" : 29
+                  }
+                },
+                "protectionTerms" : {
+                  "notionalAmount" : {
+                    "amount" : 1.5E+7,
+                    "currency" : "EUR"
+                  }
+                }
+              },
+              "interestRatePayout" : [ {
+                "calculationPeriodDates" : {
+                  "effectiveDate" : {
+                    "adjustableDate" : {
+                      "unadjustedDate" : "2018-11-06"
+                    }
+                  },
+                  "terminationDate" : {
+                    "unadjustedDate" : "2021-12-20"
+                  }
+                },
+                "dayCountFraction" : "ACT_360",
+                "interestRate" : {
+                  "fixedRate" : {
+                    "initialValue" : 0.01
+                  }
+                },
+                "payerReceiver" : {
+                  "payerPartyReference" : "6896368109418",
+                  "receiverPartyReference" : "5264151754007"
+                },
+                "quantity" : {
+                  "notionalSchedule" : {
+                    "notionalStepSchedule" : {
+                      "initialValue" : 15000000.00,
+                      "currency" : "EUR"
+                    }
+                  }
+                }
+              } ]
+            },
+            "rosettaKeyValue" : "f165ccf9"
+          },
+          "productIdentification" : {
+            "primaryAssetClass" : "CREDIT",
+            "productQualifier" : "Credit_Default_Swap_Index"
+          }
+        },
+        "tradeDate" : {
+          "date" : "2018-11-05"
+        },
+        "rosettaKey" : "47bf497e"
+      }
+    } ],
+    "payment" : [ {
+      "payerReceiver" : {
+        "payerPartyReference" : "9086125328009",
+        "receiverPartyReference" : "6896368109418"
+      },
+      "paymentAmount" : {
+        "amount" : 10000,
+        "currency" : "EUR"
+      },
+      "paymentDate" : {
+        "unadjustedDate" : "2018-11-06"
+      },
+      "paymentStatus" : "PENDING",
+      "paymentType" : "FEE",
+      "rosettaKey" : "775f9e3f"
+    } ],
+    "quantityChange" : [ {
+      "after" : {
+        "contract" : [ {
+          "account" : [ {
+            "accountNumber" : "D02656522010",
+            "servicingParty" : "444100D02FKCOHSINA94"
+          }, {
+            "accountNumber" : "P01547927812",
+            "servicingParty" : "027300P01DF7BB67DP86"
+          } ],
+          "contractIdentifier" : [ {
+            "identifierValue" : {
+              "identifier" : "ZOXOUZJNOO",
+              "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+            },
+            "version" : 2
+          } ],
+          "contractualProduct" : {
+            "economicTerms" : {
+              "payout" : {
+                "creditDefaultPayout" : {
+                  "generalTerms" : {
+                    "buyerSeller" : {
+                      "buyerPartyReference" : "9086125328009",
+                      "sellerPartyReference" : "5264151754007"
+                    },
+                    "dateAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ "EUTA" ]
+                      },
+                      "businessDayConvention" : "FOLLOWING"
+                    },
+                    "indexReferenceInformation" : {
+                      "indexName" : "iTraxx Europe Crossover Series 29 Version 1",
+                      "indexSeries" : 29
+                    }
+                  },
+                  "protectionTerms" : {
+                    "notionalAmount" : {
+                      "amount" : 15000000.00,
+                      "currency" : "EUR"
+                    }
+                  }
+                },
+                "interestRatePayout" : [ {
+                  "calculationPeriodDates" : {
+                    "effectiveDate" : {
+                      "adjustableDate" : {
+                        "unadjustedDate" : "2018-10-08"
+                      }
+                    },
+                    "terminationDate" : {
+                      "unadjustedDate" : "2021-12-20"
+                    }
+                  },
+                  "dayCountFraction" : "ACT_360",
+                  "interestRate" : {
+                    "fixedRate" : {
+                      "initialValue" : 0.01
+                    }
+                  },
+                  "payerReceiver" : {
+                    "payerPartyReference" : "9086125328009",
+                    "receiverPartyReference" : "5264151754007"
+                  },
+                  "quantity" : {
+                    "notionalSchedule" : {
+                      "notionalStepSchedule" : {
+                        "initialValue" : 15000000.00,
+                        "currency" : "EUR"
+                      }
+                    }
+                  }
+                } ]
+              },
+              "rosettaKeyValue" : "ddd4ea64"
+            },
+            "productIdentification" : {
+              "primaryAssetClass" : "CREDIT",
+              "productQualifier" : "Credit_Default_Swap_Index"
+            }
+          },
+          "tradeDate" : {
+            "adjustableDate" : {
+              "unadjustedDate" : "2018-10-05"
+            }
+          },
+          "rosettaKey" : "8be62e54"
+        } ]
+      },
+      "before" : {
+        "contractReference" : [ {
+          "identifierValue" : {
+            "identifier" : "ZOXOUZJNOO",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "version" : 1,
+          "rosettaKey" : "d9ca713b"
+        } ]
+      },
+      "change" : [ {
+        "quantity" : {
+          "amount" : 15000000.00
+        }
+      } ]
+    } ]
+  },
+  "timestamp" : {
+    "creationTimestamp" : "2018-11-05T10:55:50.394"
+  },
+  "rosettaKey" : "d0f83c1d"
+}

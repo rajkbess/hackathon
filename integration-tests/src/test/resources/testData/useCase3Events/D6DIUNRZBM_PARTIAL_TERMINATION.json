@@ -1,0 +1,288 @@
+{
+  "action" : "NEW",
+  "effectiveDate" : "2018-11-05",
+  "eventDate" : "2018-11-02",
+  "eventEffect" : {
+    "contract" : [ "55b9b88a" ],
+    "effectedContractReference" : [ "378e9069" ],
+    "effectedEvent" : "401c2fc4",
+    "payment" : [ "24992073" ]
+  },
+  "eventIdentifier" : {
+    "identifierValue" : {
+      "identifier" : "OU9KRUXTN4"
+    }
+  },
+  "intent" : "PARTIAL_TERMINATION",
+  "lineage" : {
+    "contractReference" : [ {
+      "identifierValue" : {
+        "identifier" : "D6DIUNRZBM",
+        "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+      },
+      "version" : 1
+    } ],
+    "eventReference" : [ {
+      "identifierValue" : {
+        "identifier" : "CCROJHBC8C"
+      }
+    } ]
+  },
+  "party" : [ {
+    "legalEntity" : {
+      "entityId" : "709100D01PQ7HQVZDA69",
+      "name" : "DEALER-D01"
+    },
+    "partyId" : [ "5454121752721" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  }, {
+    "legalEntity" : {
+      "entityId" : "027300P01DF7BB67DP86",
+      "name" : "CCP-P01"
+    },
+    "partyId" : [ "5264151754007" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  } ],
+  "primitive" : {
+    "payment" : [ {
+      "payerReceiver" : {
+        "payerPartyReference" : "5454121752721",
+        "receiverPartyReference" : "5264151754007"
+      },
+      "paymentAmount" : {
+        "amount" : 10000,
+        "currency" : "USD"
+      },
+      "paymentDate" : {
+        "unadjustedDate" : "2018-11-05"
+      },
+      "paymentStatus" : "PENDING",
+      "paymentType" : "FEE",
+      "rosettaKey" : "24992073"
+    } ],
+    "quantityChange" : [ {
+      "after" : {
+        "contract" : [ {
+          "account" : [ {
+            "accountNumber" : "D01823328500",
+            "servicingParty" : "709100D01PQ7HQVZDA69"
+          }, {
+            "accountNumber" : "P01547927812",
+            "servicingParty" : "027300P01DF7BB67DP86"
+          } ],
+          "contractIdentifier" : [ {
+            "identifierValue" : {
+              "identifier" : "D6DIUNRZBM",
+              "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+            },
+            "version" : 2
+          } ],
+          "contractualProduct" : {
+            "economicTerms" : {
+              "payout" : {
+                "interestRatePayout" : [ {
+                  "calculationPeriodDates" : {
+                    "calculationPeriodDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ "USNY" ]
+                      },
+                      "businessDayConvention" : "FOLLOWING"
+                    },
+                    "calculationPeriodFrequency" : {
+                      "period" : "M",
+                      "periodMultiplier" : 3,
+                      "rollConvention" : "_3"
+                    },
+                    "effectiveDate" : {
+                      "adjustableDate" : {
+                        "dateAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ "USNY" ]
+                          },
+                          "businessDayConvention" : "FOLLOWING"
+                        },
+                        "unadjustedDate" : "2018-10-04"
+                      }
+                    },
+                    "id" : "floatingCalcPeriodDates",
+                    "terminationDate" : {
+                      "dateAdjustments" : {
+                        "businessCenters" : {
+                          "businessCenter" : [ "USNY" ]
+                        },
+                        "businessDayConvention" : "FOLLOWING"
+                      },
+                      "unadjustedDate" : "2023-10-04"
+                    }
+                  },
+                  "dayCountFraction" : "_30_360",
+                  "interestRate" : {
+                    "floatingRate" : {
+                      "floatingRateIndex" : "USD_LIBOR_BBA",
+                      "indexTenor" : {
+                        "period" : "M",
+                        "periodMultiplier" : 3
+                      },
+                      "spreadSchedule" : [ {
+                        "initialValue" : 0.002
+                      } ],
+                      "initialRate" : 0.028387
+                    }
+                  },
+                  "payerReceiver" : {
+                    "payerPartyReference" : "5454121752721",
+                    "receiverPartyReference" : "5264151754007"
+                  },
+                  "paymentDates" : {
+                    "calculationPeriodDatesReference" : "floatingCalcPeriodDates",
+                    "payRelativeTo" : "CALCULATION_PERIOD_END_DATE",
+                    "paymentDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ "USNY" ]
+                      },
+                      "businessDayConvention" : "FOLLOWING"
+                    },
+                    "paymentFrequency" : {
+                      "period" : "M",
+                      "periodMultiplier" : 3
+                    }
+                  },
+                  "quantity" : {
+                    "notionalSchedule" : {
+                      "notionalStepSchedule" : {
+                        "initialValue" : 450000000.00,
+                        "currency" : "USD"
+                      }
+                    }
+                  },
+                  "resetDates" : {
+                    "calculationPeriodDatesReference" : "floatingCalcPeriodDates",
+                    "fixingDates" : {
+                      "period" : "D",
+                      "periodMultiplier" : -2,
+                      "dayType" : "BUSINESS",
+                      "businessCenters" : {
+                        "businessCenter" : [ "GBLO" ]
+                      },
+                      "businessDayConvention" : "NONE",
+                      "dateRelativeTo" : "resetDates"
+                    },
+                    "id" : "resetDates",
+                    "resetDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ "GBLO" ]
+                      },
+                      "businessDayConvention" : "FOLLOWING"
+                    },
+                    "resetFrequency" : {
+                      "period" : "M",
+                      "periodMultiplier" : 3
+                    },
+                    "resetRelativeTo" : "CALCULATION_PERIOD_START_DATE"
+                  }
+                }, {
+                  "calculationPeriodDates" : {
+                    "calculationPeriodDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ "USNY" ]
+                      },
+                      "businessDayConvention" : "FOLLOWING"
+                    },
+                    "calculationPeriodFrequency" : {
+                      "period" : "M",
+                      "periodMultiplier" : 6,
+                      "rollConvention" : "_3"
+                    },
+                    "effectiveDate" : {
+                      "adjustableDate" : {
+                        "dateAdjustments" : {
+                          "businessCenters" : {
+                            "businessCenter" : [ "USNY" ]
+                          },
+                          "businessDayConvention" : "FOLLOWING"
+                        },
+                        "unadjustedDate" : "2018-10-04"
+                      }
+                    },
+                    "id" : "fixedCalcPeriodDates",
+                    "terminationDate" : {
+                      "dateAdjustments" : {
+                        "businessCenters" : {
+                          "businessCenter" : [ "USNY" ]
+                        },
+                        "businessDayConvention" : "FOLLOWING"
+                      },
+                      "unadjustedDate" : "2023-10-04"
+                    }
+                  },
+                  "dayCountFraction" : "_30_360",
+                  "interestRate" : {
+                    "fixedRate" : {
+                      "initialValue" : 0.027954
+                    }
+                  },
+                  "payerReceiver" : {
+                    "payerPartyReference" : "5264151754007",
+                    "receiverPartyReference" : "5454121752721"
+                  },
+                  "paymentDates" : {
+                    "calculationPeriodDatesReference" : "fixedCalcPeriodDates",
+                    "payRelativeTo" : "CALCULATION_PERIOD_END_DATE",
+                    "paymentDatesAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ "USNY" ]
+                      },
+                      "businessDayConvention" : "FOLLOWING"
+                    },
+                    "paymentFrequency" : {
+                      "period" : "M",
+                      "periodMultiplier" : 6
+                    }
+                  },
+                  "quantity" : {
+                    "notionalSchedule" : {
+                      "notionalStepSchedule" : {
+                        "initialValue" : 450000000.00,
+                        "currency" : "USD"
+                      }
+                    }
+                  }
+                } ]
+              },
+              "rosettaKeyValue" : "f56d8b88"
+            },
+            "productIdentification" : {
+              "primaryAssetClass" : "INTEREST_RATE",
+              "productQualifier" : "InterestRate_IRSwap_FixedFloat"
+            }
+          },
+          "tradeDate" : {
+            "adjustableDate" : {
+              "unadjustedDate" : "2018-10-02"
+            }
+          },
+          "rosettaKey" : "55b9b88a"
+        } ]
+      },
+      "before" : {
+        "contractReference" : [ {
+          "identifierValue" : {
+            "identifier" : "D6DIUNRZBM",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "version" : 1,
+          "rosettaKey" : "faa2d1cd"
+        } ]
+      },
+      "change" : [ {
+        "quantity" : {
+          "amount" : 450000000.00
+        }
+      } ]
+    } ]
+  },
+  "timestamp" : {
+    "creationTimestamp" : "2018-11-02T10:55:50.105"
+  },
+  "rosettaKey" : "401c2fc4"
+}

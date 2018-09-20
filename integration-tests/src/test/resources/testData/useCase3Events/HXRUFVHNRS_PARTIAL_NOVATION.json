@@ -1,0 +1,268 @@
+{
+  "action" : "NEW",
+  "effectiveDate" : "2018-11-20",
+  "eventDate" : "2018-11-19",
+  "eventEffect" : {
+    "contract" : [ "612a5f4", "52819c6d" ],
+    "effectedContractReference" : [ "32b373d1" ],
+    "effectedEvent" : "b78daaed",
+    "payment" : [ "f86a9e92" ]
+  },
+  "eventIdentifier" : {
+    "identifierValue" : {
+      "identifier" : "EHLBS5PHH4"
+    }
+  },
+  "intent" : "PARTIAL_NOVATION",
+  "lineage" : {
+    "contractReference" : [ {
+      "identifierValue" : {
+        "identifier" : "HXRUFVHNRS",
+        "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+      },
+      "version" : 1
+    } ],
+    "eventReference" : [ {
+      "identifierValue" : {
+        "identifier" : "Q9R2NBBGSC"
+      }
+    } ]
+  },
+  "party" : [ {
+    "legalEntity" : {
+      "entityId" : "272200D03NJCEDFEOB38",
+      "name" : "DEALER-D03"
+    },
+    "partyId" : [ "9377538274179" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  }, {
+    "legalEntity" : {
+      "entityId" : "444100D02FKCOHSINA94",
+      "name" : "DEALER-D02"
+    },
+    "partyId" : [ "9086125328009" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  }, {
+    "legalEntity" : {
+      "entityId" : "079900D01SQ3CDRGYW04",
+      "name" : "DEALER-D01"
+    },
+    "partyId" : [ "2272953517950" ],
+    "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
+  } ],
+  "primitive" : {
+    "newTrade" : [ {
+      "contract" : {
+        "account" : [ {
+          "accountNumber" : "D01037956665",
+          "servicingParty" : "079900D01SQ3CDRGYW04"
+        }, {
+          "accountNumber" : "D02656522010",
+          "servicingParty" : "444100D02FKCOHSINA94"
+        } ],
+        "contractIdentifier" : [ {
+          "identifierValue" : {
+            "identifier" : "5HHD2LKBHZ",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "version" : 1
+        } ],
+        "contractualProduct" : {
+          "economicTerms" : {
+            "payout" : {
+              "creditDefaultPayout" : {
+                "generalTerms" : {
+                  "buyerSeller" : {
+                    "buyerPartyReference" : "2272953517950",
+                    "sellerPartyReference" : "9086125328009"
+                  },
+                  "dateAdjustments" : {
+                    "businessCenters" : {
+                      "businessCenter" : [ "USNY" ]
+                    },
+                    "businessDayConvention" : "FOLLOWING"
+                  },
+                  "indexReferenceInformation" : {
+                    "indexName" : "CDX.NA.HY",
+                    "indexSeries" : 30
+                  }
+                },
+                "protectionTerms" : {
+                  "notionalAmount" : {
+                    "amount" : 1.5E+7,
+                    "currency" : "USD"
+                  }
+                }
+              },
+              "interestRatePayout" : [ {
+                "calculationPeriodDates" : {
+                  "effectiveDate" : {
+                    "adjustableDate" : {
+                      "unadjustedDate" : "2018-11-20"
+                    }
+                  },
+                  "terminationDate" : {
+                    "unadjustedDate" : "2022-12-20"
+                  }
+                },
+                "dayCountFraction" : "ACT_360",
+                "interestRate" : {
+                  "fixedRate" : {
+                    "initialValue" : 0.05
+                  }
+                },
+                "payerReceiver" : {
+                  "payerPartyReference" : "2272953517950",
+                  "receiverPartyReference" : "9086125328009"
+                },
+                "quantity" : {
+                  "notionalSchedule" : {
+                    "notionalStepSchedule" : {
+                      "initialValue" : 15000000.00,
+                      "currency" : "USD"
+                    }
+                  }
+                }
+              } ]
+            },
+            "rosettaKeyValue" : "33ee248f"
+          },
+          "productIdentification" : {
+            "primaryAssetClass" : "CREDIT",
+            "productQualifier" : "Credit_Default_Swap_Index"
+          }
+        },
+        "tradeDate" : {
+          "date" : "2018-11-19"
+        },
+        "rosettaKey" : "52819c6d"
+      }
+    } ],
+    "payment" : [ {
+      "payerReceiver" : {
+        "payerPartyReference" : "9377538274179",
+        "receiverPartyReference" : "2272953517950"
+      },
+      "paymentAmount" : {
+        "amount" : 10000,
+        "currency" : "USD"
+      },
+      "paymentDate" : {
+        "unadjustedDate" : "2018-11-20"
+      },
+      "paymentStatus" : "PENDING",
+      "paymentType" : "FEE",
+      "rosettaKey" : "f86a9e92"
+    } ],
+    "quantityChange" : [ {
+      "after" : {
+        "contract" : [ {
+          "account" : [ {
+            "accountNumber" : "D03225622378",
+            "servicingParty" : "272200D03NJCEDFEOB38"
+          }, {
+            "accountNumber" : "D02656522010",
+            "servicingParty" : "444100D02FKCOHSINA94"
+          } ],
+          "contractIdentifier" : [ {
+            "identifierValue" : {
+              "identifier" : "HXRUFVHNRS",
+              "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+            },
+            "version" : 2
+          } ],
+          "contractualProduct" : {
+            "economicTerms" : {
+              "payout" : {
+                "creditDefaultPayout" : {
+                  "generalTerms" : {
+                    "buyerSeller" : {
+                      "buyerPartyReference" : "9377538274179",
+                      "sellerPartyReference" : "9086125328009"
+                    },
+                    "dateAdjustments" : {
+                      "businessCenters" : {
+                        "businessCenter" : [ "USNY" ]
+                      },
+                      "businessDayConvention" : "FOLLOWING"
+                    },
+                    "indexReferenceInformation" : {
+                      "indexName" : "CDX.NA.HY",
+                      "indexSeries" : 30
+                    }
+                  },
+                  "protectionTerms" : {
+                    "notionalAmount" : {
+                      "amount" : 15000000.00,
+                      "currency" : "USD"
+                    }
+                  }
+                },
+                "interestRatePayout" : [ {
+                  "calculationPeriodDates" : {
+                    "effectiveDate" : {
+                      "adjustableDate" : {
+                        "unadjustedDate" : "2018-10-19"
+                      }
+                    },
+                    "terminationDate" : {
+                      "unadjustedDate" : "2022-12-20"
+                    }
+                  },
+                  "dayCountFraction" : "ACT_360",
+                  "interestRate" : {
+                    "fixedRate" : {
+                      "initialValue" : 0.05
+                    }
+                  },
+                  "payerReceiver" : {
+                    "payerPartyReference" : "9377538274179",
+                    "receiverPartyReference" : "9086125328009"
+                  },
+                  "quantity" : {
+                    "notionalSchedule" : {
+                      "notionalStepSchedule" : {
+                        "initialValue" : 15000000.00,
+                        "currency" : "USD"
+                      }
+                    }
+                  }
+                } ]
+              },
+              "rosettaKeyValue" : "41c87637"
+            },
+            "productIdentification" : {
+              "primaryAssetClass" : "CREDIT",
+              "productQualifier" : "Credit_Default_Swap_Index"
+            }
+          },
+          "tradeDate" : {
+            "adjustableDate" : {
+              "unadjustedDate" : "2018-10-17"
+            }
+          },
+          "rosettaKey" : "612a5f4"
+        } ]
+      },
+      "before" : {
+        "contractReference" : [ {
+          "identifierValue" : {
+            "identifier" : "HXRUFVHNRS",
+            "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
+          },
+          "version" : 1,
+          "rosettaKey" : "661c8226"
+        } ]
+      },
+      "change" : [ {
+        "quantity" : {
+          "amount" : 15000000.00
+        }
+      } ]
+    } ]
+  },
+  "timestamp" : {
+    "creationTimestamp" : "2018-11-19T10:55:50.362"
+  },
+  "rosettaKey" : "b78daaed"
+}

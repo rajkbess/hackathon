@@ -1,0 +1,72 @@
+[
+  {
+    "partyId": 7223404662293,
+    "legalEntityId": "147800C02OH1BTDW6795",
+    "type": "CLIENT",
+    "account": "C02406296052",
+    "name": "CLIENT-C02"
+  },
+  {
+    "partyId": 4557544386159,
+    "legalEntityId": "897100C03M8REFIAAP62",
+    "type": "CLIENT",
+    "account": "C03600430250",
+    "name": "CLIENT-C03"
+  },
+  {
+    "partyId": 5051348723800,
+    "legalEntityId": "897100C03M8REFIAAP62",
+    "type": "CLIENT",
+    "account": "C03897384811",
+    "name": "CLIENT-C03"
+  },
+  {
+    "partyId": 4318139146432,
+    "legalEntityId": "846700C04ZZD7UVAOL86",
+    "type": "CLIENT",
+    "account": "C04021606809",
+    "name": "CLIENT-C04"
+  },
+  {
+    "partyId": 2287532394317,
+    "legalEntityId": "249000C05DXPP57OKI82",
+    "type": "CLIENT",
+    "account": "C05263988665",
+    "name": "CLIENT-C05"
+  },
+  {
+    "partyId": 2272953517950,
+    "legalEntityId": "079900D01SQ3CDRGYW04",
+    "type": "DEALER",
+    "account": "D01037956665",
+    "name": "DEALER-D01"
+  },
+  {
+    "partyId": 3211912222564,
+    "legalEntityId": "079900D01SQ3CDRGYW04",
+    "type": "DEALER",
+    "account": "D01287301031",
+    "name": "DEALER-D01"
+  },
+  {
+    "partyId": 4836059041295,
+    "legalEntityId": "079900D01SQ3CDRGYW04",
+    "type": "DEALER",
+    "account": "D01156440996",
+    "name": "DEALER-D01"
+  },
+  {
+    "partyId": 1314806275894,
+    "legalEntityId": "989900D02C660OSZDX03",
+    "type": "DEALER",
+    "account": "D02129446466",
+    "name": "DEALER-D02"
+  },
+  {
+    "partyId": 9089949966099,
+    "legalEntityId": "989900D02C660OSZDX03",
+    "type": "DEALER",
+    "account": "D02588085552",
+    "name": "DEALER-D02"
+  }
+]

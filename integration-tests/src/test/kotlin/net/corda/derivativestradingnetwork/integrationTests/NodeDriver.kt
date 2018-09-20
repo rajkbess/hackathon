@@ -46,7 +46,7 @@ class NodeDriver {
             nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }.forEach { it.confirmNodeIsOnTheNetwork() }
             println("Establishing business network")
 
-            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes)
+            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes, 0, 9, 5, 3, 1)
 
             println("Placing trades on the ledger")
             feedInTradesFromDirectoryAndConfirmAssertions(nonBnoNodes.map { it.testIdentity.name.organisation to it }.toMap())
@@ -58,17 +58,17 @@ class NodeDriver {
         }
     }
 
-    private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>) {
+    private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>, existingMembers : Int, expectedMembers : Int, expectedClients : Int, expectedDealers : Int, expectedCcps : Int) {
         val networkDefinition = getNetworkDefinitionJson()
         //at the beginning there are no members
-        assertEquals(0, bno.getMembershipStates().size)
+        assertEquals(existingMembers, bno.getMembershipStates().size)
 
         membersToBe.forEach {
             acquireMembershipAndConfirmAssertions(bno, it, networkDefinition)
         }
 
         //check members can see one another
-        membersToBe.forEach { confirmVisibility(it as MemberNode, 9, 5, 3, 1) }
+        membersToBe.forEach { confirmVisibility(it, expectedMembers, expectedClients, expectedDealers, expectedCcps) }
     }
 
     private fun feedInTradesFromDirectoryAndConfirmAssertions(nameToNode : Map<String,MemberNode>) {

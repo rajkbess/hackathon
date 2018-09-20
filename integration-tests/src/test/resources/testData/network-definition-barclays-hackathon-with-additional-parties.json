@@ -254,5 +254,12 @@
     "type": "DEALER",
     "account": "D02588085552",
     "name": "DEALER-D02"
-  }
+  },{
+  "partyId": 6896368109418,
+  "legalEntityId": "897100C03M8REFIAAP62",
+  "type": "CLIENT",
+  "account": "C03628152908",
+  "name": "CLIENT-C03"
+}
+
 ]

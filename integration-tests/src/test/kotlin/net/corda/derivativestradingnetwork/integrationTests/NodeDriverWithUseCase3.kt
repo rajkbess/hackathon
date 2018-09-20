@@ -60,6 +60,8 @@ class NodeDriverWithUseCase3 {
 
             println("-------- USE CASE 3 --------")
             feedInUseCase3Events(nameToNodeMap)
+
+            println("-------- USE CASE 3 COMPLETED -------")
         }
     }
 
@@ -69,18 +71,12 @@ class NodeDriverWithUseCase3 {
 
         directoryWithEvents.listFiles { file, name -> name.endsWith(".json",true)}.forEach {
             println("Starting to handle event ${it.name}")
-
-            if(it.name != "ZOXOUZJNOO_PARTIAL_NOVATION.json") {
                 val eventJson = it.readText()
                 val event = parseEventFromJson(eventJson)
 
                 val nodeToInitiate = decideWhoInitiatesTheEvent(event, partyIdToName, nameToNode)
                 println("It will be placed on the ledger by node ${nodeToInitiate.testIdentity.name.organisation}")
                 nodeToInitiate.persistCDMEventOnLedger(eventJson)
-            }
-
-
-
         }
     }
 

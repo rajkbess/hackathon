@@ -10,5 +10,10 @@ class WrapperAroundNodeDriver {
         NodeDriver().runNetwork()
     }
 
+    @Test
+    fun `Run Network with use case 3`() {
+        NodeDriverWithUseCase3().runNetwork()
+    }
+
 }
 

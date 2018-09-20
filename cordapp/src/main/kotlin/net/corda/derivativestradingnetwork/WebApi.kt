@@ -90,7 +90,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun liveCDMContracts() : Response {
-        return createResponseToContractsQuery(VaultQueryType.LIVE_CONTRACTS)
+        return createResponseToQuery(VaultQueryType.LIVE_CONTRACTS)
     }
 
     @GET
@@ -98,7 +98,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun terminatedCDMContracts() : Response {
-        return createResponseToContractsQuery(VaultQueryType.TERMINATED_CONTRACTS)
+        return createResponseToQuery(VaultQueryType.TERMINATED_CONTRACTS)
     }
 
     @GET
@@ -106,7 +106,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun novatedCDMContracts() : Response {
-        return createResponseToContractsQuery(VaultQueryType.NOVATED_CONTRACTS)
+        return createResponseToQuery(VaultQueryType.NOVATED_CONTRACTS)
     }
 
     @GET
@@ -123,6 +123,14 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun cDMPayments(@QueryParam("contractId") contractId: String, @QueryParam("contractIdScheme") contractIdScheme: String,@QueryParam("issuer") issuer: String?,@QueryParam("partyReference") partyReference: String?) : Response {
         return createResponseToTargetedQuery(VaultTargetedQueryType.PAYMENTS,contractId,contractIdScheme,issuer,partyReference)
+    }
+
+    @GET
+    @Path("CDMPaymentsAll")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun cDMPaymentsAll() : Response {
+        return createResponseToQuery(VaultQueryType.PAYMENTS)
     }
 
     @GET
@@ -160,7 +168,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
         }
     }
 
-    private fun createResponseToContractsQuery(vaultQueryType: VaultQueryType) : Response {
+    private fun createResponseToQuery(vaultQueryType: VaultQueryType) : Response {
         return try {
             val flowHandle = rpcOps.startTrackedFlow(::VaultQueryFlow, vaultQueryType)
             val result = flowHandle.returnValue.getOrThrow()

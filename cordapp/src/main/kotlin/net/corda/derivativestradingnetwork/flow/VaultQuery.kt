@@ -11,7 +11,8 @@ import net.corda.core.serialization.CordaSerializable
 enum class VaultQueryType {
     LIVE_CONTRACTS,
     TERMINATED_CONTRACTS,
-    NOVATED_CONTRACTS
+    NOVATED_CONTRACTS,
+    PAYMENTS
 }
 
 @CordaSerializable
@@ -30,6 +31,7 @@ class VaultQueryFlow(val vaultQueryType : VaultQueryType) : FlowLogic<String>() 
             VaultQueryType.LIVE_CONTRACTS -> liveContracts(cdmVaultQuery)
             VaultQueryType.TERMINATED_CONTRACTS -> terminatedContracts(cdmVaultQuery)
             VaultQueryType.NOVATED_CONTRACTS -> novatedContracts(cdmVaultQuery)
+            VaultQueryType.PAYMENTS -> payments(cdmVaultQuery)
         }
     }
 
@@ -46,6 +48,11 @@ class VaultQueryFlow(val vaultQueryType : VaultQueryType) : FlowLogic<String>() 
     @Suspendable
     private fun novatedContracts(cdmVaultQuery: DefaultCdmVaultQuery) : String {
         return serializeCdmObjectIntoJson(cdmVaultQuery.getNovatedContracts())
+    }
+
+    @Suspendable
+    private fun payments(cdmVaultQuery: DefaultCdmVaultQuery) : String {
+        return serializeCdmObjectIntoJson(cdmVaultQuery.getPayments())
     }
 }
 

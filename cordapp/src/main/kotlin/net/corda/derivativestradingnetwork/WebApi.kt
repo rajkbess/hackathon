@@ -307,7 +307,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
         logger.info("Found ${ourMemberAccounts.size} member accounts in the file")
         val name = if (ourMemberAccounts.map { it.name }.distinct().size == 1) { ourMemberAccounts.first().name } else { throw InvalidMembershipMetadata("All accounts are expected to live under one name")}
         val role = if (ourMemberAccounts.map { it.type }.distinct().size == 1) { ourMemberAccounts.first().type } else { throw InvalidMembershipMetadata("All accounts are expected to live under one type")}
-        val legalEntityId = if (ourMemberAccounts.map { it.legalEntityId }.distinct().size == 1) { ourMemberAccounts.first().legalEntityId } else { throw InvalidMembershipMetadata("All accounts are expected to live under one legal entity id. $myOrganisation has ${ourMemberAccounts.map { it.legalEntityId }.distinct().size} legal entities")}
+        val legalEntityId = ourMemberAccounts.map { it.legalEntityId }.distinct()
         val partyIdAndAccountPairs = ourMemberAccounts.map { it.partyId to it.account }.toMap()
 
         return MembershipMetadata(partyIdAndAccountPairs, legalEntityId, role, name)

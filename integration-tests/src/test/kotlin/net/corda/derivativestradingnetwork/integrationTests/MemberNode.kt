@@ -34,15 +34,15 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
 
     //vault query related
     fun getLiveContracts() : List<*> {
-        return getContracts("liveCDMContracts")
+        return getCdmObjects("liveCDMContracts")
     }
 
     fun getTerminatedContracts() : List<*> {
-        return getContracts("terminatedCDMContracts")
+        return getCdmObjects("terminatedCDMContracts")
     }
 
     fun getNovatedContracts() : List<*> {
-        return getContracts("novatedCDMContracts")
+        return getCdmObjects("novatedCDMContracts")
     }
 
     fun getResets(contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
@@ -51,6 +51,17 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
 
     fun getPayments(contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
         return getContractEvents("CDMPayments", contractId, contractIdScheme, issuer, partyReference)
+    }
+
+    fun getAllPayments() : List<*> {
+        return getCdmObjects("CDMPaymentsAll")
+    }
+
+    fun getAllPayments(status : String) : List<*> {
+        return getAllPayments().filter {
+            val asMap = it as Map<String,Object>
+            asMap.get("paymentStatus").toString().equals(status, true)
+        }
     }
 
     private fun getContractEvents(type : String, contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
@@ -65,7 +76,7 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         return getSuitableGson().fromJson(responseInJson,List::class.java)
     }
 
-    fun getContracts(qualifier : String) : List<*> {
+    fun getCdmObjects(qualifier : String) : List<*> {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/$qualifier"
         val request = Request.Builder().url(url).build()

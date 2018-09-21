@@ -37,12 +37,13 @@ class SettlePaymentsFlow(val settlementInstructions : List<SettlementInstruction
             val receiverParty = payment.payerReceiver.receiverPartyReference
             val paymentStatus = payment.paymentStatus.toString()
             val currency = payment.paymentAmount.currency
+            val paymentDate = payment.paymentDate.unadjustedDate!! //@todo make this better
 
-            settlementInstruction.currency == currency && paymentStatus.equals("PENDING",true) && setOf(settlementInstruction.payerPartyId,settlementInstruction.receiverPartyId) == setOf(payerParty, receiverParty)
+             settlementInstruction.paymentDate == paymentDate && settlementInstruction.currency == currency && paymentStatus.equals("PENDING",true) && setOf(settlementInstruction.payerPartyId,settlementInstruction.receiverPartyId) == setOf(payerParty, receiverParty)
         }
 
         return paymentsToSettleWithThisInstruction.map {
-            subFlow(SettlePaymentFlow(it, settlementInstruction.settlementReference))
+            subFlow(SettlePaymentFlow(it, settlementInstruction.settlementConfirmation))
         }
     }
 }

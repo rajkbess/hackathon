@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Windows: Run Network With Use Case 3" type="JUnit" factoryName="JUnit">
+  <configuration default="false" name="Windows: Run Network With Use Case 5" type="JUnit" factoryName="JUnit">
     <module name="integration-tests_test" />
     <shortenClasspath name="MANIFEST" />
     <extension name="coverage">
@@ -10,7 +10,7 @@
     </extension>
     <option name="PACKAGE_NAME" value="net.corda.derivativestradingnetwork.integrationTests" />
     <option name="MAIN_CLASS_NAME" value="net.corda.derivativestradingnetwork.integrationTests.WrapperAroundNodeDriver" />
-    <option name="METHOD_NAME" value="Run Network with use case 3" />
+    <option name="METHOD_NAME" value="Run Network with use case 5" />
     <option name="TEST_OBJECT" value="method" />
     <option name="VM_PARAMETERS" value="-ea -javaagent:lib/quasar.jar" />
     <option name="PARAMETERS" value="" />

@@ -78,11 +78,11 @@ class WebApi(val rpcOps: CordaRPCOps) {
         val rawData = Gson().fromJson(settlementInstructionJson,List::class.java)
         return rawData.map { it as Map<String,Object> }.map {
             val receiverPartyId = it.get("receiverPartyId") as String
-            val receiverAccountId = it.get("receiverAccountId") as String
-            val receiverName = it.get("receiverName") as String
+            val receiverAccountId = it.get("receiverAccountId") as String?
+            val receiverName = it.get("receiverName") as String?
             val payerPartyId = it.get("payerPartyId") as String
-            val payerAccountId = it.get("payerAccountId") as String
-            val payerName = it.get("payerName") as String
+            val payerAccountId = it.get("payerAccountId") as String?
+            val payerName = it.get("payerName") as String?
             val amount = it.get("amount") as Double
             val currency = it.get("currency") as String
             val paymentDate = LocalDate.parse(it.get("paymentDate") as String)

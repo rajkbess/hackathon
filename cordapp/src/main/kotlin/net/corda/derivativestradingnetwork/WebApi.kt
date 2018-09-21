@@ -65,13 +65,9 @@ class WebApi(val rpcOps: CordaRPCOps) {
     fun processSettlementInstruction(settlementInstructionJson: String): Response {
         return try {
             val settlementInstructions = createSettlementInstructions(settlementInstructionJson)
-            throw UnsupportedOperationException()
-            /*
-            val networkMap = createNetworkMap()
-            val flowHandle = rpcOps.startTrackedFlow(::PersistCDMEventOnLedgerFlow, cdmEventJson, networkMap)
+            val flowHandle = rpcOps.startTrackedFlow(::SettlePaymentsFlow, settlementInstructions)
             val result = flowHandle.returnValue.getOrThrow()
-            Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
-            */
+            Response.status(Response.Status.OK).entity("Transaction ids ${result.map { it.id }} committed to ledger.\n").build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
             Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()

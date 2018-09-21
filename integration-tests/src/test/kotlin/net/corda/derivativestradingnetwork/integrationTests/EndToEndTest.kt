@@ -238,9 +238,27 @@ class EndToEndTest {
             assertEquals(1, client2.getLiveContracts().size)
             assertEquals(1, dealer3.getLiveContracts().size)
             assertEquals(2, ccp.getLiveContracts().size)
-            assertEquals(1, client2.getPayments("BD25TK6B0W","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/").size)
-            assertEquals(1, dealer3.getPayments("BD25TK6B0W","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/").size)
+            val client2PaymentsBeforeSettlement = client2.getPayments("BD25TK6B0W","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            val dealer3PaymentsBeforeSettlement = dealer3.getPayments("BD25TK6B0W","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, client2PaymentsBeforeSettlement.size)
+            assertEquals(1, dealer3PaymentsBeforeSettlement.size)
             assertEquals(0, ccp.getPayments("BD25TK6B0W","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/").size)
+            assertEquals("PENDING",(client2PaymentsBeforeSettlement.first() as Map<String,Object>).get("paymentStatus").toString())
+            assertEquals("PENDING",(dealer3PaymentsBeforeSettlement.first() as Map<String,Object>).get("paymentStatus").toString())
+
+            //send in settlement to that payment now
+            val settlementInstructions = EndToEndTest::class.java.getResource("/testData/useCase5Events/titosFile.json").readText()
+            dealer3.processSettlementInstruction(settlementInstructions)
+
+            val client2PaymentsAfterSettlement = client2.getPayments("BD25TK6B0W","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            val dealer3PaymentsAfterSettlement = dealer3.getPayments("BD25TK6B0W","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, client2PaymentsAfterSettlement.size)
+            assertEquals(1, dealer3PaymentsAfterSettlement.size)
+            assertEquals(0, ccp.getPayments("BD25TK6B0W","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/").size)
+            assertEquals("SETTLED",(client2PaymentsAfterSettlement.first() as Map<String,Object>).get("paymentStatus").toString())
+            assertEquals("SETTLED",(dealer3PaymentsAfterSettlement.first() as Map<String,Object>).get("paymentStatus").toString())
+            assertEquals("CONFIRMATION_TAG",(client2PaymentsAfterSettlement.first() as Map<String,Object>).get("settlementReference").toString())
+            assertEquals("CONFIRMATION_TAG",(dealer3PaymentsAfterSettlement.first() as Map<String,Object>).get("settlementReference").toString())
         }
     }
 

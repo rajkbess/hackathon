@@ -1,6 +1,6 @@
 [
   {
-    "receiverPartyId": "7223404662293",
+    "receiverPartyId": "8153870222725",
     "receiverAccountId": "",
     "receiverName": "",
     "payerPartyId": "7223404662293",
@@ -9,7 +9,7 @@
     "amount": 10000.0,
     "currency": "EUR",
     "paymentDate": "2018-11-02",
-    "settlementConfirmation": ""
+    "settlementConfirmation": "CONFIRMATION_TAG"
   },
   {
     "receiverPartyId": "2834529327893",

@@ -1,0 +1,26 @@
+[
+  {
+    "receiverPartyId": "7223404662293",
+    "receiverAccountId": "",
+    "receiverName": "",
+    "payerPartyId": "7223404662293",
+    "payerAccountId": "",
+    "payerName": "",
+    "amount": 10000.0,
+    "currency": "EUR",
+    "paymentDate": "2018-11-02",
+    "settlementConfirmation": ""
+  },
+  {
+    "receiverPartyId": "2834529327893",
+    "receiverAccountId": "",
+    "receiverName": "",
+    "payerPartyId": "7223404662293",
+    "payerAccountId": "",
+    "payerName": "",
+    "amount": 10000.0,
+    "currency": "USD",
+    "paymentDate": "2018-11-13",
+    "settlementConfirmation": ""
+  }
+]

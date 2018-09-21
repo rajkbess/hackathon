@@ -17,6 +17,12 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         assertTrue(response.isSuccessful)
     }
 
+    fun processSettlementInstruction(settlementInstructionJson : String) {
+        val response = postJsonToUrl(settlementInstructionJson, "http://${webHandle.listenAddress}/api/memberApi/processSettlementInstruction")
+        assertEquals("OK", response.message())
+        assertTrue(response.isSuccessful)
+    }
+
     fun shareContract(shareWith : String, contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null) {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/shareContract"

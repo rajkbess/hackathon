@@ -2,6 +2,7 @@ package net.corda.derivativestradingnetwork
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.jaxrs.annotation.JacksonFeatures
+import com.google.gson.Gson
 import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
@@ -21,10 +22,12 @@ import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import net.corda.derivativestradingnetwork.UtilParsers.Companion.parseMembershipDefinitionJson
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
+import net.corda.derivativestradingnetwork.entity.SettlementInstruction
 import net.corda.derivativestradingnetwork.flow.*
 import net.corda.webserver.services.WebServerPluginRegistry
 import org.isda.cdm.Contract
 import org.slf4j.Logger
+import java.time.LocalDate
 import java.util.function.Function
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
@@ -53,6 +56,43 @@ class WebApi(val rpcOps: CordaRPCOps) {
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
             Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @POST
+    @Path("processSettlementInstruction")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun processSettlementInstruction(settlementInstructionJson: String): Response {
+        return try {
+            val settlementInstructions = createSettlementInstructions(settlementInstructionJson)
+            throw UnsupportedOperationException()
+            /*
+            val networkMap = createNetworkMap()
+            val flowHandle = rpcOps.startTrackedFlow(::PersistCDMEventOnLedgerFlow, cdmEventJson, networkMap)
+            val result = flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
+            */
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    private fun createSettlementInstructions(settlementInstructionJson: String) : List<SettlementInstruction> {
+        val rawData = Gson().fromJson(settlementInstructionJson,List::class.java)
+        return rawData.map { it as Map<String,Object> }.map {
+            val receiverPartyId = it.get("receiverPartyId") as String
+            val receiverAccountId = it.get("receiverAccountId") as String
+            val receiverName = it.get("receiverName") as String
+            val payerPartyId = it.get("payerPartyId") as String
+            val payerAccountId = it.get("payerAccountId") as String
+            val payerName = it.get("payerName") as String
+            val amount = it.get("amount") as Double
+            val currency = it.get("currency") as String
+            val paymentDate = LocalDate.parse(it.get("paymentDate") as String)
+            val settlementReference = it.get("settlementConfirmation") as String
+
+            SettlementInstruction(receiverPartyId,receiverAccountId,receiverName,payerPartyId,payerAccountId,payerName,amount,currency,paymentDate,settlementReference)
         }
     }
 

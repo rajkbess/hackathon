@@ -112,10 +112,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
         val flowHandle = rpcOps.startTrackedFlow(::GetMembersFlow,false)
         val members = flowHandle.returnValue.getOrThrow()
 
-        val partyIdToCordaPartyMap = members.flatMap {
-            val party = it.party
-            it.membershipMetadata.partyIdAndAccountPairs.map { it.key to party }
-        }.toMap()
+        val partyIdToCordaPartyMap = members.map { it.membershipMetadata.partyId to it.party }.toMap()
 
         return NetworkMap(partyIdToCordaPartyMap)
     }
@@ -226,9 +223,8 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @POST
     @Path("requestMembership")
     @Produces(MediaType.APPLICATION_JSON)
-    fun requestMembership(membershipDefinitionJson: String): Response {
+    fun requestMembership(membershipMetadata: MembershipMetadata): Response {
         return try {
-            val membershipMetadata = createMembershipMetadata(membershipDefinitionJson)
             val flowHandle = rpcOps.startTrackedFlow(::RequestMembershipFlow, membershipMetadata)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
@@ -339,22 +335,6 @@ class WebApi(val rpcOps: CordaRPCOps) {
     private fun getPartiesOnThisBusinessNetwork() : List<PartyNameAndMembershipMetadata> {
         val flowHandle = rpcOps.startTrackedFlow(::GetMembersFlow,false)
         return flowHandle.returnValue.getOrThrow().map { PartyNameAndMembershipMetadata(it.party.toString(),it.membershipMetadata) }
-    }
-
-    private fun createMembershipMetadata(membershipDefinitionJson: String) : MembershipMetadata {
-        logger.info("Creating membership metadata from json $membershipDefinitionJson")
-        val allMemberAccounts = parseMembershipDefinitionJson(membershipDefinitionJson)
-        logger.info("Found ${allMemberAccounts.size} member accounts in the file")
-        allMemberAccounts.map { it.name }.distinct().forEach { println("Account for $it found in the file") }
-        val myOrganisation = rpcOps.nodeInfo().legalIdentities.first().name.organisation
-        val ourMemberAccounts = allMemberAccounts.filter { it.name ==  myOrganisation}
-        logger.info("Found ${ourMemberAccounts.size} member accounts in the file")
-        val name = if (ourMemberAccounts.map { it.name }.distinct().size == 1) { ourMemberAccounts.first().name } else { throw InvalidMembershipMetadata("All accounts are expected to live under one name")}
-        val role = if (ourMemberAccounts.map { it.type }.distinct().size == 1) { ourMemberAccounts.first().type } else { throw InvalidMembershipMetadata("All accounts are expected to live under one type")}
-        val legalEntityId = ourMemberAccounts.map { it.legalEntityId }.distinct()
-        val partyIdAndAccountPairs = ourMemberAccounts.map { it.partyId to it.account }.toMap()
-
-        return MembershipMetadata(partyIdAndAccountPairs, legalEntityId, role, name)
     }
 }
 

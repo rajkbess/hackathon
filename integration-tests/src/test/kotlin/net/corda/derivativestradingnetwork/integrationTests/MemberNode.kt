@@ -1,6 +1,7 @@
 package net.corda.derivativestradingnetwork.integrationTests
 
 import com.google.common.reflect.TypeToken
+import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
@@ -90,8 +91,8 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
     }
 
     //membership related
-    fun askForMembership(membershipDefinition : String) {
-        val response = postPlainTextToUrl(membershipDefinition, "http://${webHandle.listenAddress}/api/memberApi/requestMembership")
+    fun askForMembership(membershipMetadata : MembershipMetadata) {
+        val response = postObjectAsJsonToUrl(membershipMetadata, "http://${webHandle.listenAddress}/api/memberApi/requestMembership")
         assertEquals("OK", response.message())
         assertTrue(response.isSuccessful)
     }

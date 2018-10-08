@@ -1,0 +1,48 @@
+{
+  "eventDate": "2019-03-22T00:00:00",
+  "eventEffect": {
+    "effectedEvent": "512103b7"
+  },
+  "eventIdentifier": {
+    "identifierValue": {
+      "identifier": "5b9ff8b5f048662f045724cd"
+    }
+  },
+  "eventQualifier": "Observation",
+  "messageInformation": {
+    "messageId": "1486297",
+    "messageIdScheme": "http://www.party1.com/message-id",
+    "sentBy": "Sender",
+    "sentTo": "Receiver"
+  },
+  "primitive": {
+    "observation": {
+      "date": "2019-03-22T00:00:00",
+      "observation": "-0.00312",
+      "source": {
+        "curve": {
+          "interestRateCurve": {
+            "floatingRateIndex": "EUR_EURIBOR_REUTERS",
+            "tenor": {
+              "period": "M",
+              "periodMultiplier": "6"
+            }
+          }
+        },
+        "informationSource": {
+          "sourcePage": "pagetbd",
+          "sourceProvider": "THOMSON REUTERS"
+        }
+      },
+      "time": {
+        "location": "UTC",
+        "locationScheme": "http://www.fpml.org/coding-scheme/external/tzdatabase",
+        "time": "11:00:00"
+      }
+    }
+  },
+  "timestamp": {
+    "creationTimestamp": "2018-09-20T18:13:51"
+  },
+  "rosettaKey": ""
+}

@@ -69,11 +69,11 @@ class NodeDriverWithUseCase5 {
             println("-------- Use case 3 completed -------")
 
             println("-------- Settling all payments --------")
-            settleAllPayments(nonBnoNodes)
+            //settleAllPayments(nonBnoNodes)
 
             println("-------- Confirming no one has any payments in pending ----")
-            nonBnoNodes.forEach { assertEquals(0, it.getAllPayments("PENDING").size) }
-            println("--------- ALL GOOD FOR USE CASE 5 ------")
+            //nonBnoNodes.forEach { assertEquals(0, it.getAllPayments("PENDING").size) }
+            println("--------- ALL GOOD FOR USE CASE 5, READY TO DO SETTLEMENTS ------")
         }
     }
 

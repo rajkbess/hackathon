@@ -33,21 +33,21 @@
       "entityId" : "272200D03NJCEDFEOB38",
       "name" : "DEALER-D03"
     },
-    "partyId" : [ "8153870222725" ],
+    "partyId" : [ "DEALER-3-ACCOUNT" ],
     "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
   }, {
     "legalEntity" : {
       "entityId" : "027300P01DF7BB67DP86",
       "name" : "CCP-P01"
     },
-    "partyId" : [ "5264151754007" ],
+    "partyId" : [ "CCP-1-ACCOUNT" ],
     "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
   }, {
     "legalEntity" : {
       "entityId" : "147800C02OH1BTDW6795",
       "name" : "CLIENT-C02"
     },
-    "partyId" : [ "7223404662293" ],
+    "partyId" : [ "CLIENT-2-ACCOUNT" ],
     "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
   } ],
   "primitive" : {
@@ -73,8 +73,8 @@
               "creditDefaultPayout" : {
                 "generalTerms" : {
                   "buyerSeller" : {
-                    "buyerPartyReference" : "7223404662293",
-                    "sellerPartyReference" : "5264151754007"
+                    "buyerPartyReference" : "CLIENT-2-ACCOUNT",
+                    "sellerPartyReference" : "CCP-1-ACCOUNT"
                   },
                   "dateAdjustments" : {
                     "businessCenters" : {
@@ -112,8 +112,8 @@
                   }
                 },
                 "payerReceiver" : {
-                  "payerPartyReference" : "7223404662293",
-                  "receiverPartyReference" : "5264151754007"
+                  "payerPartyReference" : "CLIENT-2-ACCOUNT",
+                  "receiverPartyReference" : "CCP-1-ACCOUNT"
                 },
                 "quantity" : {
                   "notionalSchedule" : {
@@ -140,8 +140,8 @@
     } ],
     "payment" : [ {
       "payerReceiver" : {
-        "payerPartyReference" : "8153870222725",
-        "receiverPartyReference" : "7223404662293"
+        "payerPartyReference" : "DEALER-3-ACCOUNT",
+        "receiverPartyReference" : "CLIENT-2-ACCOUNT"
       },
       "paymentAmount" : {
         "amount" : 10000,
@@ -177,8 +177,8 @@
                 "creditDefaultPayout" : {
                   "generalTerms" : {
                     "buyerSeller" : {
-                      "buyerPartyReference" : "8153870222725",
-                      "sellerPartyReference" : "5264151754007"
+                      "buyerPartyReference" : "DEALER-3-ACCOUNT",
+                      "sellerPartyReference" : "CCP-1-ACCOUNT"
                     },
                     "dateAdjustments" : {
                       "businessCenters" : {
@@ -216,8 +216,8 @@
                     }
                   },
                   "payerReceiver" : {
-                    "payerPartyReference" : "8153870222725",
-                    "receiverPartyReference" : "5264151754007"
+                    "payerPartyReference" : "DEALER-3-ACCOUNT",
+                    "receiverPartyReference" : "CCP-1-ACCOUNT"
                   },
                   "quantity" : {
                     "notionalSchedule" : {

@@ -1,0 +1,72 @@
+{
+  "eventDate": "2018-09-24T00:00:00",
+  "eventEffect": {
+    "effectedEvent": "651eab30"
+  },
+  "eventIdentifier": {
+    "identifierValue": {
+      "identifier": ""
+    }
+  },
+  "eventQualifier": "Reset",
+  "lineage": {
+    "contractReference": [
+      {
+        "identifierValue": {
+          "identifier": ""
+        }
+      },
+      {
+        "identifierValue": {
+          "identifier": ""
+        }
+      }
+    ],
+    "eventReference": {
+      "identifierValue": {
+        "identifier": ""
+      }
+    }
+  },
+  "messageInformation": {
+    "messageId": "1486297",
+    "messageIdScheme": "http://www.party1.com/message-id",
+    "sentBy": "3993378688666.0000000000",
+    "sentTo": "5264151754007.0000000000"
+  },
+  "party": [
+    {
+      "id": "",
+      "partyId": "3993378688666.0000000000",
+      "partyIdScheme": "http://www.fpml.org/coding-scheme/external/iso17442"
+    },
+    {
+      "id": "",
+      "partyId": "3993378688666.0000000000",
+      "partyIdScheme": "http://www.fpml.org/coding-scheme/external/iso17442"
+    }
+  ],
+  "primitive": {
+    "reset": {
+      "cashflow": {
+        "payerReceiver": {
+          "payerPartyReference": "3993378688666.0000000000",
+          "receiverPartyReference": "5264151754007.0000000000"
+        },
+        "cashflowAmount": {
+          "amount": "-602000",
+          "currency": "EUR"
+        },
+        "cashflowCalculation": "FloatingAmount",
+        "rosettaKeyValue": ""
+      },
+      "date": "2018-09-24T00:00:00",
+      "resetValue": "-0.00301",
+      "rosettaKey": ""
+    }
+  },
+  "timestamp": {
+    "creationTimestamp": "2018-03-20T18:13:51"
+  },
+  "rosettaKey": ""
+}

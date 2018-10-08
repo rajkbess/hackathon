@@ -1,0 +1,77 @@
+{
+  "eventDate": "2019-03-22T00:00:00",
+  "eventEffect": {
+    "effectedEvent": "651eab30",
+    "payment": "f301caeb"
+  },
+  "eventIdentifier": {
+    "identifierValue": {
+      "identifier": ""
+    }
+  },
+  "eventQualifier": "Payment",
+  "lineage": {
+    "contractReference": [
+      {
+        "identifierValue": {
+          "identifier": ""
+        }
+      },
+      {
+        "identifierValue": {
+          "identifier": ""
+        },
+        "#text": "\r\ns      "
+      }
+    ],
+    "eventReference": {
+      "identifierValue": {
+        "identifier": ""
+      }
+    }
+  },
+  "messageInformation": {
+    "messageId": "1486297",
+    "messageIdScheme": "http://www.party1.com/message-id",
+    "sentBy": "3993378688666.0000000000",
+    "sentTo": "5264151754007.0000000000"
+  },
+  "party": [
+    {
+      "id": "",
+      "partyId": "3993378688666.0000000000",
+      "partyIdScheme": "http://www.fpml.org/coding-scheme/external/iso17442"
+    },
+    {
+      "id": "",
+      "partyId": "3993378688666.0000000000",
+      "partyIdScheme": "http://www.fpml.org/coding-scheme/external/iso17442"
+    }
+  ],
+  "primitive": {
+    "payment": {
+      "payerReceiver": {
+        "payerPartyReference": "3993378688666.0000000000",
+        "receiverPartyReference": "5264151754007.0000000000"
+      },
+      "paymentAmount": {
+        "amount": "-624000",
+        "currency": "EUR"
+      },
+      "paymentDate": {
+        "dateAdjustments": {
+          "businessCenters": {
+            "businessCenter": "EUTA"
+          },
+          "businessDayConvention": "MODFOLLOWING"
+        },
+        "unadjustedDate": "2018-03-28T00:00:00"
+      },
+      "rosettaKey": ""
+    }
+  },
+  "timestamp": {
+    "creationTimestamp": "2018-03-20T18:13:51"
+  },
+  "rosettaKey": ""
+}

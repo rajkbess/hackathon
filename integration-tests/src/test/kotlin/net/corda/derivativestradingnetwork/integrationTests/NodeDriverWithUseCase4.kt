@@ -66,7 +66,7 @@ class NodeDriverWithUseCase4 {
     }
 
     private fun feedInUseCase4Events(nameToNode : Map<String,MemberNode>) {
-        val directoryWithEvents = File(NodeDriver::class.java.getResource("/testData/useCase3Events").file)
+        val directoryWithEvents = File(NodeDriver::class.java.getResource("/testData/useCase4Events").file)
         val partyIdToName = createMapFromPartyIdToName(getNetworkDefinitionJson())
 
         directoryWithEvents.listFiles { file, name -> name.endsWith(".json",true)}.forEach {

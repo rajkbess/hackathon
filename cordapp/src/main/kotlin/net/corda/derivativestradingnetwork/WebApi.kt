@@ -304,6 +304,20 @@ class WebApi(val rpcOps: CordaRPCOps) {
     }
 
     @GET
+    @Path("matchingServices")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun getMatchingServices() : Response {
+        return try {
+            val clients = getPartiesOnThisBusinessNetwork("matching service")
+            Response.status(Response.Status.OK).entity(clients).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @GET
     @Path("regulators")
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))

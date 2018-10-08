@@ -35,14 +35,15 @@ class NodeDriver {
             val dealer1 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D01", "", "US")), false)
             val dealer2 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D02", "", "US")), false)
             val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
+            val matchingService = MemberNode(this, TestIdentity(CordaX500Name("MATCHING-SERVICE-M01", "", "US")), false)
 
-            val nonBnoNodes = listOf(dealer1, dealer2, ccp)
+            val nonBnoNodes = listOf(dealer1, dealer2, ccp, matchingService)
             val nodes = listOf(bno) + nonBnoNodes
 
             nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }.forEach { it.confirmNodeIsOnTheNetwork() }
             println("Establishing business network")
 
-            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes - dealer2, 0, 2, 0, 1, 1)
+            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes - dealer2, 0, 3, 0, 1, 1,1)
 
             println("----- Network set up -----")
             nodes.forEach {
@@ -51,7 +52,7 @@ class NodeDriver {
         }
     }
 
-    private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>, existingMembers : Int, expectedMembers : Int, expectedClients : Int, expectedDealers : Int, expectedCcps : Int) {
+    private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>, existingMembers : Int, expectedMembers : Int, expectedClients : Int, expectedDealers : Int, expectedCcps : Int, expectedMatchingServices : Int) {
         //at the beginning there are no members
         assertEquals(existingMembers, bno.getMembershipStates().size)
 
@@ -61,6 +62,7 @@ class NodeDriver {
                 it.testIdentity.name.organisation.contains("dealer",true) -> "dealer"
                 it.testIdentity.name.organisation.contains("ccp",true) -> "ccp"
                 it.testIdentity.name.organisation.contains("regulator",true) -> "regulator"
+                it.testIdentity.name.organisation.contains("matching-service",true) -> "matching service"
                 else -> throw RuntimeException("Role not recognized from organisation name")
             }
             val membershipMetadata = MembershipMetadata(role, it.testIdentity.name.organisation,it.testIdentity.name.organisation.hashCode().toString(),"Somewhere beyond the rainbow","Main Branch",it.testIdentity.name.organisation.hashCode().toString())
@@ -68,7 +70,7 @@ class NodeDriver {
         }
 
         //check members can see one another
-        membersToBe.forEach { confirmVisibility(it, expectedMembers, expectedClients, expectedDealers, expectedCcps) }
+        membersToBe.forEach { confirmVisibility(it, expectedMembers, expectedClients, expectedDealers, expectedCcps, expectedMatchingServices) }
     }
 
 
@@ -79,10 +81,11 @@ class NodeDriver {
         assertEquals(membershipsBefore + 1, bno.getMembershipStates().size)
     }
 
-    private fun confirmVisibility(memberNode: MemberNode, allMembers: Int, clients: Int, dealers: Int, ccps: Int) {
+    private fun confirmVisibility(memberNode: MemberNode, allMembers: Int, clients: Int, dealers: Int, ccps: Int, matchingServices : Int) {
         assertEquals(allMembers, memberNode.getMembersVisibleToNode().size)
         assertEquals(clients, memberNode.getMembersVisibleToNode("clients").size)
         assertEquals(dealers, memberNode.getMembersVisibleToNode("dealers").size)
         assertEquals(ccps, memberNode.getMembersVisibleToNode("ccps").size)
+        assertEquals(matchingServices, memberNode.getMembersVisibleToNode("matchingServices").size)
     }
 }

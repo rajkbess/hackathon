@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 
 class EndToEndTest {
 
-    fun setUpEnvironmentAndRunTest(test : (DriverDSL, BnoNode, MemberNode, MemberNode, MemberNode)->Unit) {
+    fun setUpEnvironmentAndRunTest(test : (DriverDSL, BnoNode, MemberNode, MemberNode, MemberNode, MemberNode)->Unit) {
         driver(DriverParameters(isDebug = true, startNodesInProcess = true,
                 extraCordappPackagesToScan = listOf(
                         "net.corda.cdmsupport",
@@ -30,27 +30,38 @@ class EndToEndTest {
             val dealer1 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D01", "", "US")), false)
             val dealer2 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D02", "", "US")), false)
             val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
+            val matchingService = MemberNode(this, TestIdentity(CordaX500Name("MATCHING-SERVICE-M01", "", "US")), false)
 
-            listOf(bno,dealer1,dealer2,ccp).map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }
+            listOf(bno,dealer1,dealer2, matchingService, ccp).map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }
 
             //confirm all the nodes are on the network
             bno.confirmNodeIsOnTheNetwork()
             dealer1.confirmNodeIsOnTheNetwork()
             dealer2.confirmNodeIsOnTheNetwork()
             ccp.confirmNodeIsOnTheNetwork()
+            matchingService.confirmNodeIsOnTheNetwork()
 
-            establishBusinessNetworkAndConfirmAssertions(bno, listOf(dealer1,dealer2,ccp))
+            establishBusinessNetworkAndConfirmAssertions(bno, listOf(dealer1,dealer2,ccp,matchingService))
 
             //run the test
-            test(this, bno,  dealer1, dealer2, ccp)
+            test(this, bno,  dealer1, dealer2, ccp,matchingService)
 
         }
     }
 
     @Test
-    fun `Test membershpips`() {
-        setUpEnvironmentAndRunTest { _, bno, dealer1, dealer2, ccp ->
+    fun `Matching service outputs a Party A to Party B Trade`() {
+        setUpEnvironmentAndRunTest { _, bno, dealer1, dealer2, ccp, matchingService ->
+            val dealer1Dealer2Trade = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/newTrade_1.json").readText()
+            assertEquals(0, dealer1.getLiveContracts().size)
+            assertEquals(0, dealer1.getLiveContracts().size)
+            assertEquals(0, matchingService.getLiveContracts().size)
 
+            dealer1.persistCDMEventOnLedger(dealer1Dealer2Trade)
+
+            assertEquals(1, dealer1.getLiveContracts().size)
+            assertEquals(1, dealer2.getLiveContracts().size)
+            assertEquals(1, matchingService.getLiveContracts().size)
         }
     }
 
@@ -64,13 +75,14 @@ class EndToEndTest {
                 it.testIdentity.name.organisation.contains("dealer",true) -> "dealer"
                 it.testIdentity.name.organisation.contains("ccp",true) -> "ccp"
                 it.testIdentity.name.organisation.contains("regulator",true) -> "regulator"
+                it.testIdentity.name.organisation.contains("matching-service",true) -> "matching service"
                 else -> throw RuntimeException("Role not recognized from organisation name")
             }
-            acquireMembershipAndConfirmAssertions(bno,it,MembershipMetadata(role, it.testIdentity.name.organisation,it.testIdentity.name.organisation.hashCode().toString(),"Somewhere beyond the rainbow","Main Branch",it.testIdentity.name.organisation.hashCode().toString()))
+            acquireMembershipAndConfirmAssertions(bno,it,MembershipMetadata(role, it.testIdentity.name.organisation,it.testIdentity.name.organisation.hashCode().toString(),"Somewhere beyond the rainbow","Main Branch",it.testIdentity.name.organisation))
         }
 
         //check members can see one another
-        membersToBe.forEach { confirmVisibility(it as MemberNode, 3, 0, 2, 1, 0) }
+        membersToBe.forEach { confirmVisibility(it as MemberNode, 4, 0, 2, 1, 0) }
     }
 
     private fun acquireMembershipAndConfirmAssertions(bno : BnoNode, member : MemberNode, membershipMetadata : MembershipMetadata) {

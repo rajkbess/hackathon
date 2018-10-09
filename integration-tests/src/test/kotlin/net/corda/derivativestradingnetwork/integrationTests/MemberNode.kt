@@ -24,6 +24,15 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         assertTrue(response.isSuccessful)
     }
 
+    fun approveDraftCDMContractOnLedger(contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null) {
+        val nodeAddress = webHandle.listenAddress
+        val url = "http://$nodeAddress/api/memberApi/approveDraftCDMContract"
+        val response = postHeadersToUrl(url, mapOf("contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference).filter { it.value != null } as Map<String,String>)
+
+        assertTrue(response.isSuccessful)
+        assertEquals("OK", response.message())
+    }
+
     fun processSettlementInstruction(settlementInstructionJson : String) {
         val response = postJsonToUrl(settlementInstructionJson, "http://${webHandle.listenAddress}/api/memberApi/processSettlementInstruction")
         assertEquals("OK", response.message())

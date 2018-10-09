@@ -21,7 +21,7 @@
   }, {
     "legalEntity" : {
       "entityId" : "521700C015DIKTCI1V98",
-      "name" : "CLIENT-C01"
+      "name" : "DEALER-D02"
     },
     "partyId" : [ "DEALER-D02" ],
     "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"

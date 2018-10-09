@@ -1,10 +1,10 @@
 package net.corda.derivativestradingnetwork.states
 
 import com.regnosys.rosetta.common.serialisation.RosettaObjectMapper
-import net.corda.core.contracts.CommandData
-import net.corda.core.contracts.Contract
-import net.corda.core.contracts.LinearState
-import net.corda.core.contracts.UniqueIdentifier
+import net.corda.cdmsupport.CDMContractState
+import net.corda.cdmsupport.CDMEvent
+import net.corda.cdmsupport.eventparsing.serializeCdmObjectIntoJson
+import net.corda.core.contracts.*
 import net.corda.core.identity.Party
 import net.corda.core.transactions.LedgerTransaction
 
@@ -14,7 +14,22 @@ class DraftCDMContract : Contract {
     }
 
     override fun verify(tx: LedgerTransaction) {
-        // TODO: Write the verify logic.
+        val command = tx.commands.requireSingleCommand<CommandData>()
+
+        when (command.value) {
+            is DraftCDMContract.Commands.Draft -> return
+            is CDMEvent.Commands.NewTrade -> requireThat {
+                val input = tx.inputs.single()
+                val inputState = input.state.data as DraftCDMContractState
+                val output = tx.outputs.filter { it.data is CDMContractState }.single()
+                val outputState = output.data as CDMContractState
+
+                "Draft input state must be the same as live output state" using (serializeCdmObjectIntoJson(inputState.contract()) == serializeCdmObjectIntoJson(outputState.contract()))
+            }
+            else -> throw IllegalArgumentException("Unsupported command ${command.value}")
+        }
+
+
     }
 
     interface Commands : CommandData {

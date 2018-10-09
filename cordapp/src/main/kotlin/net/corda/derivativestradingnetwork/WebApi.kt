@@ -73,6 +73,21 @@ class WebApi(val rpcOps: CordaRPCOps) {
     }
 
     @POST
+    @Path("approveDraftCDMContract")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun approveDraftCDMContract(@HeaderParam("contractId") contractId: String, @HeaderParam("contractIdScheme") contractIdScheme: String,@HeaderParam("issuer") issuer: String?,@HeaderParam("partyReference") partyReference: String?): Response {
+        return try {
+            val networkMap = createNetworkMap()
+            val flowHandle = rpcOps.startTrackedFlow(::ApproveDraftCDMContractOnLedgerFlow, networkMap, contractId, contractIdScheme, issuer, partyReference, 1000)
+            val result = flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @POST
     @Path("processSettlementInstruction")
     @Produces(MediaType.APPLICATION_JSON)
     fun processSettlementInstruction(settlementInstructionJson: String): Response {

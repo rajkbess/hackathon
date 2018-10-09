@@ -57,7 +57,7 @@ class EndToEndTest {
             assertEquals(0, dealer1.getLiveContracts().size)
             assertEquals(0, matchingService.getLiveContracts().size)
 
-            dealer1.persistCDMEventOnLedger(dealer1Dealer2Trade)
+            matchingService.persistCDMEventOnLedger(dealer1Dealer2Trade)
 
             assertEquals(1, dealer1.getLiveContracts().size)
             assertEquals(1, dealer2.getLiveContracts().size)

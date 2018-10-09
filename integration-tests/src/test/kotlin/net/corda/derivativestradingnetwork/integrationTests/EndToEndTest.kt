@@ -16,6 +16,7 @@ class EndToEndTest {
                 extraCordappPackagesToScan = listOf(
                         "net.corda.cdmsupport",
                         "net.corda.derivativestradingnetwork.flow",
+                        "net.corda.derivativestradingnetwork.states",
                         "net.corda.businessnetworks.membership.member.service",
                         "net.corda.businessnetworks.membership.member",
                         "net.corda.businessnetworks.membership.bno",
@@ -50,18 +51,16 @@ class EndToEndTest {
     }
 
     @Test
-    fun `Matching service outputs a Party A to Party B Trade`() {
-        setUpEnvironmentAndRunTest { _, bno, dealer1, dealer2, ccp, matchingService ->
-            val dealer1Dealer2Trade = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/newTrade_1.json").readText()
-            assertEquals(0, dealer1.getLiveContracts().size)
-            assertEquals(0, dealer1.getLiveContracts().size)
-            assertEquals(0, matchingService.getLiveContracts().size)
+    fun `Party A can propose a contract draft to Party B`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, _, _ ->
+            val cdmContract = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+            assertEquals(0, dealer1.getDraftContracts().size)
+            assertEquals(0, dealer1.getDraftContracts().size)
 
-            matchingService.persistCDMEventOnLedger(dealer1Dealer2Trade)
+            dealer1.persistDraftCDMContractOnLedger(cdmContract)
 
-            assertEquals(1, dealer1.getLiveContracts().size)
-            assertEquals(1, dealer2.getLiveContracts().size)
-            assertEquals(1, matchingService.getLiveContracts().size)
+            assertEquals(1, dealer1.getDraftContracts().size)
+            assertEquals(1, dealer2.getDraftContracts().size)
         }
     }
 

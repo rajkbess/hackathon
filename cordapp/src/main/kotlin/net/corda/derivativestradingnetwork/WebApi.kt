@@ -20,12 +20,10 @@ import net.corda.core.node.services.Vault
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
-import net.corda.derivativestradingnetwork.UtilParsers.Companion.parseMembershipDefinitionJson
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
 import net.corda.derivativestradingnetwork.entity.SettlementInstruction
 import net.corda.derivativestradingnetwork.flow.*
 import net.corda.webserver.services.WebServerPluginRegistry
-import org.isda.cdm.Contract
 import org.slf4j.Logger
 import java.time.LocalDate
 import java.util.function.Function
@@ -51,6 +49,21 @@ class WebApi(val rpcOps: CordaRPCOps) {
         return try {
             val networkMap = createNetworkMap()
             val flowHandle = rpcOps.startTrackedFlow(::PersistCDMEventOnLedgerFlow, cdmEventJson, networkMap)
+            val result = flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @POST
+    @Path("persistDraftCDMContract")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun persistDraftCDMContract(cdmContractJson: String): Response {
+        return try {
+            val networkMap = createNetworkMap()
+            val flowHandle = rpcOps.startTrackedFlow(::PersistDraftCDMContractOnLedgerFlow, cdmContractJson, networkMap)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
         } catch (ex: Throwable) {
@@ -124,6 +137,14 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun liveCDMContracts() : Response {
         return createResponseToQuery(VaultQueryType.LIVE_CONTRACTS)
+    }
+
+    @GET
+    @Path("draftCDMContracts")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun draftCDMContracts() : Response {
+        return createResponseToQuery(VaultQueryType.DRAFT_CONTRACTS)
     }
 
     @GET

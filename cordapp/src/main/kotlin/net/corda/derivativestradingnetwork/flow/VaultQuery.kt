@@ -5,14 +5,17 @@ import net.corda.cdmsupport.eventparsing.createContractIdentifier
 import net.corda.cdmsupport.eventparsing.serializeCdmObjectIntoJson
 import net.corda.cdmsupport.vaultquerying.DefaultCdmVaultQuery
 import net.corda.core.flows.*
+import net.corda.core.node.services.queryBy
 import net.corda.core.serialization.CordaSerializable
+import net.corda.derivativestradingnetwork.states.DraftCDMContractState
 
 @CordaSerializable
 enum class VaultQueryType {
     LIVE_CONTRACTS,
     TERMINATED_CONTRACTS,
     NOVATED_CONTRACTS,
-    PAYMENTS
+    PAYMENTS,
+    DRAFT_CONTRACTS
 }
 
 @CordaSerializable
@@ -32,6 +35,7 @@ class VaultQueryFlow(val vaultQueryType : VaultQueryType) : FlowLogic<String>() 
             VaultQueryType.TERMINATED_CONTRACTS -> terminatedContracts(cdmVaultQuery)
             VaultQueryType.NOVATED_CONTRACTS -> novatedContracts(cdmVaultQuery)
             VaultQueryType.PAYMENTS -> payments(cdmVaultQuery)
+            VaultQueryType.DRAFT_CONTRACTS -> draftContracts()
         }
     }
 
@@ -53,6 +57,11 @@ class VaultQueryFlow(val vaultQueryType : VaultQueryType) : FlowLogic<String>() 
     @Suspendable
     private fun payments(cdmVaultQuery: DefaultCdmVaultQuery) : String {
         return serializeCdmObjectIntoJson(cdmVaultQuery.getPayments())
+    }
+
+    @Suspendable
+    private fun draftContracts() : String {
+        return serializeCdmObjectIntoJson(serviceHub.vaultService.queryBy<DraftCDMContractState>().states.map { it.state.data.contract() })
     }
 }
 

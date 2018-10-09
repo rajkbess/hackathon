@@ -23,6 +23,7 @@ class NodeDriver {
                 extraCordappPackagesToScan = listOf(
                         "net.corda.cdmsupport",
                         "net.corda.derivativestradingnetwork.flow",
+                        "net.corda.derivativestradingnetwork.states",
                         "net.corda.businessnetworks.membership.member.service",
                         "net.corda.businessnetworks.membership.member",
                         "net.corda.businessnetworks.membership.bno",
@@ -48,7 +49,32 @@ class NodeDriver {
             nodes.forEach {
                 println("${it.testIdentity.name.organisation} web url is ${it.webHandle.listenAddress}")
             }
+
+            putSomeTradesOnTheNetwork(dealer1, dealer2)
         }
+    }
+
+    private fun putSomeTradesOnTheNetwork(dealer1 : MemberNode, dealer2 : MemberNode) {
+        val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+        val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_2.json").readText()
+        assertEquals(0, dealer1.getDraftContracts().size)
+        assertEquals(0, dealer2.getDraftContracts().size)
+
+        dealer1.persistDraftCDMContractOnLedger(cdmContract1)
+        dealer1.persistDraftCDMContractOnLedger(cdmContract2)
+
+        assertEquals(2, dealer1.getDraftContracts().size)
+        assertEquals(2, dealer2.getDraftContracts().size)
+
+        dealer2.approveDraftCDMContractOnLedger("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+
+        assertEquals(1, dealer1.getDraftContracts().size)
+        assertEquals(1, dealer2.getDraftContracts().size)
+
+        assertEquals(1, dealer1.getLiveContracts().size)
+        assertEquals(1, dealer2.getLiveContracts().size)
+
+        println("Test trades uploaded")
     }
 
     private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>, existingMembers : Int, expectedMembers : Int, expectedClients : Int, expectedDealers : Int, expectedCcps : Int, expectedMatchingServices : Int) {
@@ -64,7 +90,7 @@ class NodeDriver {
                 it.testIdentity.name.organisation.contains("matching-service",true) -> "matching service"
                 else -> throw RuntimeException("Role not recognized from organisation name")
             }
-            val membershipMetadata = MembershipMetadata(role, it.testIdentity.name.organisation,it.testIdentity.name.organisation.hashCode().toString(),"Somewhere beyond the rainbow","Main Branch",it.testIdentity.name.organisation.hashCode().toString())
+            val membershipMetadata = MembershipMetadata(role, it.testIdentity.name.organisation,it.testIdentity.name.organisation.hashCode().toString(),"Somewhere beyond the rainbow","Main Branch",it.testIdentity.name.organisation)
             acquireMembershipAndConfirmAssertions(bno, it, membershipMetadata)
         }
 

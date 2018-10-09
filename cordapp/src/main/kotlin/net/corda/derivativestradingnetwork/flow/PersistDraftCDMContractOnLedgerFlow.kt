@@ -36,7 +36,7 @@ class PersistDraftCDMContractOnLedgerFlow(val cdmContractJson : String, val netw
 
     private fun createOutputState(contract : Contract) : DraftCDMContractState {
         val json = serializeCdmObjectIntoJson(contract)
-        val participants = contract.getPartyReferences().map { networkMap.partyIdToCordaParty[it]!! }
+        val participants = contract.getPartyReferences().map { networkMap.partyIdToCordaParty[it] ?: throw FlowException("Cannot find party for party id $it") }
         return DraftCDMContractState(ourIdentity,json, participants, UniqueIdentifier())
     }
 }

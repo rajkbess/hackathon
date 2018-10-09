@@ -35,15 +35,14 @@ class NodeDriver {
             val dealer1 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D01", "", "US")), false)
             val dealer2 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D02", "", "US")), false)
             val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
-            val matchingService = MemberNode(this, TestIdentity(CordaX500Name("MATCHING-SERVICE-M01", "", "US")), false)
 
-            val nonBnoNodes = listOf(dealer1, dealer2, ccp, matchingService)
+            val nonBnoNodes = listOf(dealer1, dealer2, ccp)
             val nodes = listOf(bno) + nonBnoNodes
 
             nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }.forEach { it.confirmNodeIsOnTheNetwork() }
             println("Establishing business network")
 
-            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes - dealer2, 0, 3, 0, 1, 1,1)
+            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes, 0, 3, 0, 2, 1,0)
 
             println("----- Network set up -----")
             nodes.forEach {

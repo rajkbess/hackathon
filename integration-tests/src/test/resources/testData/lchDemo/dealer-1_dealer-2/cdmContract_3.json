@@ -8,7 +8,7 @@
   } ],
   "contractIdentifier" : [ {
     "identifierValue" : {
-      "identifier" : "1234TradeId_2",
+      "identifier" : "1234TradeId_3",
       "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
     },
     "version" : 1
@@ -86,8 +86,8 @@
           "quantity" : {
             "notionalSchedule" : {
               "notionalStepSchedule" : {
-                "initialValue" : 4500000.00,
-                "currency" : "EUR"
+                "initialValue" : 250000.00,
+                "currency" : "USD"
               }
             }
           },
@@ -187,8 +187,8 @@
           "quantity" : {
             "notionalSchedule" : {
               "notionalStepSchedule" : {
-                "initialValue" : 4500000.00,
-                "currency" : "EUR"
+                "initialValue" : 250000.00,
+                "currency" : "USD"
               }
             }
           },

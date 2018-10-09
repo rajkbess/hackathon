@@ -68,7 +68,7 @@ class EndToEndTest {
     fun `Party B can accept Party A proposal`() {
         setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, _, _ ->
             val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
-            val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+            val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_2.json").readText()
             assertEquals(0, dealer1.getDraftContracts().size)
             assertEquals(0, dealer2.getDraftContracts().size)
 

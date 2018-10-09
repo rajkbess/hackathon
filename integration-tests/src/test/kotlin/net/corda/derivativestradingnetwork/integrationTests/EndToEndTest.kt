@@ -96,6 +96,22 @@ class EndToEndTest {
         }
     }
 
+    @Test
+    fun `Party cannot accept their own proposal`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, _, _ ->
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+            assertEquals(0, dealer1.getDraftContracts().size)
+            assertEquals(0, dealer2.getDraftContracts().size)
+
+            dealer1.persistDraftCDMContractOnLedger(cdmContract1)
+
+            assertEquals(1, dealer1.getDraftContracts().size)
+            assertEquals(1, dealer2.getDraftContracts().size)
+
+            dealer1.approveDraftCDMContractOnLedger("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",null,null,"We never proposed this draft")
+        }
+    }
+
     private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {
         //at the beginning there are no members
         assertEquals(0,bno.getMembershipStates().size)

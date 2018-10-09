@@ -145,7 +145,10 @@ class ApproveDraftCDMContractOnLedgerFlowResponder(flowSession : FlowSession) : 
     override fun onOtherPartyMembershipVerified(): SignedTransaction {
         val signTransactionFlow = object : SignTransactionFlow(flowSession) {
             override fun checkTransaction(stx: SignedTransaction) {
-                //always sign, it's only a draft
+                //don't sign this unless it's proposed by us
+                if(ourIdentity != (stx.toLedgerTransaction(serviceHub,false).inputStates.find { it is DraftCDMContractState } as DraftCDMContractState).proposer) {
+                    throw FlowException("We never proposed this draft")
+                }
             }
         }
 

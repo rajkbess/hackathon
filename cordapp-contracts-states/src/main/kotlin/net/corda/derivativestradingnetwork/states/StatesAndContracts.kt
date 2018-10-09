@@ -38,6 +38,7 @@ class DraftCDMContract : Contract {
 }
 
 data class DraftCDMContractState(
+        val proposer : Party,
         private val contractJson: String,
         override val participants: List<Party>,
         override val linearId: UniqueIdentifier) : LinearState {

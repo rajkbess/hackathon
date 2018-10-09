@@ -7,6 +7,7 @@ import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
 import okhttp3.Request
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Boolean) : BusinessNetworkNode(driver, testIdentity, autoStart) {
@@ -24,13 +25,19 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         assertTrue(response.isSuccessful)
     }
 
-    fun approveDraftCDMContractOnLedger(contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null) {
+    fun approveDraftCDMContractOnLedger(contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null, expectErrorMessage : String? = null) {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/approveDraftCDMContract"
         val response = postHeadersToUrl(url, mapOf("contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference).filter { it.value != null } as Map<String,String>)
 
-        assertTrue(response.isSuccessful)
-        assertEquals("OK", response.message())
+        if(expectErrorMessage == null) {
+            assertTrue(response.isSuccessful)
+            assertEquals("OK", response.message())
+        } else {
+            assertFalse(response.isSuccessful)
+            assertTrue(response.body().string().contains(expectErrorMessage))
+        }
+
     }
 
     fun processSettlementInstruction(settlementInstructionJson : String) {

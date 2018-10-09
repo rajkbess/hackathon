@@ -37,7 +37,7 @@ class PersistDraftCDMContractOnLedgerFlow(val cdmContractJson : String, val netw
     private fun createOutputState(contract : Contract) : DraftCDMContractState {
         val json = serializeCdmObjectIntoJson(contract)
         val participants = contract.getPartyReferences().map { networkMap.partyIdToCordaParty[it]!! }
-        return DraftCDMContractState(json, participants, UniqueIdentifier())
+        return DraftCDMContractState(ourIdentity,json, participants, UniqueIdentifier())
     }
 }
 
@@ -48,7 +48,10 @@ class PersistDraftCDMContractOnLedgerFlowResponder(flowSession : FlowSession) : 
     override fun onOtherPartyMembershipVerified(): SignedTransaction {
         val signTransactionFlow = object : SignTransactionFlow(flowSession) {
             override fun checkTransaction(stx: SignedTransaction) {
-                //always sign, it's only a draft
+                //make sure no one pretends we are the proposer
+                if(ourIdentity == (stx.toLedgerTransaction(serviceHub,false).outputStates.single() as DraftCDMContractState).proposer) {
+                    throw FlowException("Other side is putting me down as a proposer of this draft")
+                }
             }
         }
 

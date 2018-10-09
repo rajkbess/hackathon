@@ -8,7 +8,7 @@
   } ],
   "contractIdentifier" : [ {
     "identifierValue" : {
-      "identifier" : "1234TradeId_1",
+      "identifier" : "1234TradeId_2",
       "identifierScheme" : "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"
     },
     "version" : 1

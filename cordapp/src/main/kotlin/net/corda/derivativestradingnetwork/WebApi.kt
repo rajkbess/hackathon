@@ -88,39 +88,6 @@ class WebApi(val rpcOps: CordaRPCOps) {
     }
 
     @POST
-    @Path("processSettlementInstruction")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun processSettlementInstruction(settlementInstructionJson: String): Response {
-        return try {
-            val settlementInstructions = createSettlementInstructions(settlementInstructionJson)
-            val flowHandle = rpcOps.startTrackedFlow(::SettlePaymentsFlow, settlementInstructions)
-            val result = flowHandle.returnValue.getOrThrow()
-            Response.status(Response.Status.OK).entity("Transaction ids ${result.map { it.id }} committed to ledger.\n").build()
-        } catch (ex: Throwable) {
-            logger.error(ex.message, ex)
-            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
-        }
-    }
-
-    private fun createSettlementInstructions(settlementInstructionJson: String) : List<SettlementInstruction> {
-        val rawData = Gson().fromJson(settlementInstructionJson,List::class.java)
-        return rawData.map { it as Map<String,Object> }.map {
-            val receiverPartyId = it.get("receiverPartyId") as String
-            val receiverAccountId = it.get("receiverAccountId") as String?
-            val receiverName = it.get("receiverName") as String?
-            val payerPartyId = it.get("payerPartyId") as String
-            val payerAccountId = it.get("payerAccountId") as String?
-            val payerName = it.get("payerName") as String?
-            val amount = it.get("amount") as Double
-            val currency = it.get("currency") as String
-            val paymentDate = LocalDate.parse(it.get("paymentDate") as String)
-            val settlementReference = it.get("settlementConfirmation") as String
-
-            SettlementInstruction(receiverPartyId,receiverAccountId,receiverName,payerPartyId,payerAccountId,payerName,amount,currency,paymentDate,settlementReference)
-        }
-    }
-
-    @POST
     @Path("shareContract")
     @Produces(MediaType.APPLICATION_JSON)
     fun shareContract(@HeaderParam("shareWith") shareWith: String, @HeaderParam("contractId") contractId: String, @HeaderParam("contractIdScheme") contractIdScheme: String,@HeaderParam("issuer") issuer: String?,@HeaderParam("partyReference") partyReference: String?) : Response {

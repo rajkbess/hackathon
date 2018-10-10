@@ -18,7 +18,7 @@ class ShareContractFlow(val shareWith : Party, val contractId : String, val cont
         val cdmVaultQuery = DefaultCdmVaultQuery(serviceHub)
         val contractIdentifier = createContractIdentifier(contractId, contractIdScheme, issuer, partyReference)
 
-        val contract = cdmVaultQuery.getCmdContractState(listOf(contractIdentifier))
+        val contract = cdmVaultQuery.getCdmContractState(listOf(contractIdentifier))
         val session = initiateFlow(shareWith)
         subFlow(SendTransactionFlow(session, serviceHub.validatedTransactions.getTransaction(contract.ref.txhash)!!))
     }

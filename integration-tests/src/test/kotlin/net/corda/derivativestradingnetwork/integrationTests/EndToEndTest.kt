@@ -100,17 +100,42 @@ class EndToEndTest {
     fun `Party cannot accept their own proposal`() {
         setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, _, _ ->
             val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
-            assertEquals(0, dealer1.getDraftContracts().size)
-            assertEquals(0, dealer2.getDraftContracts().size)
-
+            assertNumbersOfContracts(listOf(dealer1,dealer2), 0, 0)
             dealer1.persistDraftCDMContractOnLedger(cdmContract1)
-
-            assertEquals(1, dealer1.getDraftContracts().size)
-            assertEquals(1, dealer2.getDraftContracts().size)
-
+            assertNumbersOfContracts(listOf(dealer1,dealer2),1,0)
             dealer1.approveDraftCDMContractOnLedger("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",null,null,"We never proposed this draft")
         }
     }
+
+    @Test
+    fun `Party can get trade cleared`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, ccp, _ ->
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+            assertNumbersOfContracts(listOf(dealer1,dealer2), 0, 0)
+            dealer1.persistDraftCDMContractOnLedger(cdmContract1)
+            assertNumbersOfContracts(listOf(dealer1,dealer2), 1, 0)
+            dealer2.approveDraftCDMContractOnLedger("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertNumbersOfContracts(listOf(dealer1,dealer2),0,1)
+            dealer1.clearCDMContract("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertNumbersOfContracts(listOf(dealer1,dealer2),0, 1, 1)
+            assertNumbersOfContracts(ccp, 0, 2, 0)
+
+            //look closer at the trades
+            confirmTradeIdentity("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts().first() as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_1_A","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getLiveContracts().first() as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getNovatedContracts().first() as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getNovatedContracts().first() as Map<String,Any>)
+
+            confirmTradeIdentity("1234TradeId_1_A","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",ccp.getLiveContracts()[0] as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",ccp.getLiveContracts()[1] as Map<String,Any>)
+        }
+    }
+
+    private fun confirmTradeIdentity(contractId : String, contractIdScheme : String, trade : Map<String,Any>) {
+        assertEquals(contractId, (((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifier").toString())
+        assertEquals(contractIdScheme, (((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifierScheme").toString())
+    }
+
 
     private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {
         //at the beginning there are no members
@@ -145,5 +170,15 @@ class EndToEndTest {
         assertEquals(dealers,memberNode.getMembersVisibleToNode("dealers").size)
         assertEquals(ccps,memberNode.getMembersVisibleToNode("ccps").size)
         assertEquals(regulators,memberNode.getMembersVisibleToNode("regulators").size)
+    }
+
+    private fun assertNumbersOfContracts(memberNodes : List<MemberNode>, draft : Int, live : Int = 0, novated : Int = 0) {
+        memberNodes.forEach { assertNumbersOfContracts(it, draft, live, novated) }
+    }
+
+    private fun assertNumbersOfContracts(memberNode : MemberNode, draft : Int, live : Int = 0, novated : Int = 0) {
+        assertEquals(draft, memberNode.getDraftContracts().size)
+        assertEquals(live, memberNode.getLiveContracts().size)
+        assertEquals(novated, memberNode.getNovatedContracts().size)
     }
 }

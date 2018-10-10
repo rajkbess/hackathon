@@ -5,6 +5,7 @@ import net.corda.businessnetworks.membership.common.PartyAndMembershipMetadata
 import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatedFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.cdmsupport.CDMEvent
 import net.corda.cdmsupport.CdmContractNotFound
 import net.corda.cdmsupport.MultipleCdmContractsFound
 import net.corda.cdmsupport.eventparsing.createContractIdentifier
@@ -23,7 +24,6 @@ import net.corda.core.node.services.vault.DEFAULT_PAGE_NUM
 import net.corda.core.node.services.vault.PageSpecification
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.transactions.SignedTransaction
-import net.corda.derivativestradingnetwork.states.DraftCDMContract
 import net.corda.derivativestradingnetwork.states.DraftCDMContractState
 import org.isda.cdm.ContractIdentifier
 import java.time.LocalDate
@@ -45,7 +45,7 @@ class ApproveDraftCDMContractOnLedgerFlow(val networkMap : NetworkMap, val contr
     private fun persistOnTheLedger(eventJson : String, draftContractToConsume : StateAndRef<DraftCDMContractState>) : SignedTransaction {
         val event = parseEventFromJson(eventJson)
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
-        val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub),DraftCDMContract.ID)
+        val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub),CDMEvent.ID)
         cdmTransactionBuilder.addInputState(draftContractToConsume)
 
         cdmTransactionBuilder.verify(serviceHub)

@@ -40,6 +40,21 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
 
     }
 
+    fun clearCDMContract(contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null, expectErrorMessage : String? = null) {
+        val nodeAddress = webHandle.listenAddress
+        val url = "http://$nodeAddress/api/memberApi/clearCDMContract"
+        val response = postHeadersToUrl(url, mapOf("contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference).filter { it.value != null } as Map<String,String>)
+
+        if(expectErrorMessage == null) {
+            assertTrue(response.isSuccessful)
+            assertEquals("OK", response.message())
+        } else {
+            assertFalse(response.isSuccessful)
+            assertTrue(response.body().string().contains(expectErrorMessage))
+        }
+
+    }
+
     fun processSettlementInstruction(settlementInstructionJson : String) {
         val response = postJsonToUrl(settlementInstructionJson, "http://${webHandle.listenAddress}/api/memberApi/processSettlementInstruction")
         assertEquals("OK", response.message())

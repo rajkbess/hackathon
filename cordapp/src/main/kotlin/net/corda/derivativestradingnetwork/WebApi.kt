@@ -2,7 +2,7 @@ package net.corda.derivativestradingnetwork
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.jaxrs.annotation.JacksonFeatures
-import com.google.gson.Gson
+import net.corda.businessnetworks.membership.common.PartyAndMembershipMetadata
 import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
@@ -79,6 +79,22 @@ class WebApi(val rpcOps: CordaRPCOps) {
         return try {
             val networkMap = createNetworkMap()
             val flowHandle = rpcOps.startTrackedFlow(::ApproveDraftCDMContractOnLedgerFlow, networkMap, contractId, contractIdScheme, issuer, partyReference, 1000)
+            val result = flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @POST
+    @Path("clearCDMContract")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun clearCDMContract(@HeaderParam("contractId") contractId: String, @HeaderParam("contractIdScheme") contractIdScheme: String,@HeaderParam("issuer") issuer: String?,@HeaderParam("partyReference") partyReference: String?): Response {
+        return try {
+            val networkMap = createNetworkMap()
+            val ccp = getPartiesOnThisBusinessNetwork("ccp").single().party
+            val flowHandle = rpcOps.startTrackedFlow(::ClearCDMContractOnLedgerFlow, networkMap, ccp, contractId, contractIdScheme, issuer, partyReference)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
         } catch (ex: Throwable) {
@@ -256,7 +272,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun getMembers() : Response {
         return try {
-            val parties = getPartiesOnThisBusinessNetwork()
+            val parties = getPartyNamesOnThisBusinessNetwork()
             Response.status(Response.Status.OK).entity(parties).build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
@@ -270,7 +286,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun getClients() : Response {
         return try {
-            val clients = getPartiesOnThisBusinessNetwork("client")
+            val clients = getPartyNamesOnThisBusinessNetwork("client")
             Response.status(Response.Status.OK).entity(clients).build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
@@ -284,7 +300,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun getDealers() : Response {
         return try {
-            val clients = getPartiesOnThisBusinessNetwork("dealer")
+            val clients = getPartyNamesOnThisBusinessNetwork("dealer")
             Response.status(Response.Status.OK).entity(clients).build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
@@ -298,7 +314,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun getCcps() : Response {
         return try {
-            val clients = getPartiesOnThisBusinessNetwork("ccp")
+            val clients = getPartyNamesOnThisBusinessNetwork("ccp")
             Response.status(Response.Status.OK).entity(clients).build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
@@ -312,7 +328,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun getMatchingServices() : Response {
         return try {
-            val clients = getPartiesOnThisBusinessNetwork("matching service")
+            val clients = getPartyNamesOnThisBusinessNetwork("matching service")
             Response.status(Response.Status.OK).entity(clients).build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
@@ -326,7 +342,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun getRegulators() : Response {
         return try {
-            val clients = getPartiesOnThisBusinessNetwork("regulator")
+            val clients = getPartyNamesOnThisBusinessNetwork("regulator")
             Response.status(Response.Status.OK).entity(clients).build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
@@ -335,7 +351,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     }
 
     private fun getPartyFromThisBusinessNetwork(name : String) : Party {
-        val partiesOfThisName = getPartiesOnThisBusinessNetwork().filter { it.membershipMetadata.name == name }.map { CordaX500Name.parse(it.party) }
+        val partiesOfThisName = getPartyNamesOnThisBusinessNetwork().filter { it.membershipMetadata.name == name }.map { CordaX500Name.parse(it.party) }
         val party = when {
             partiesOfThisName.isEmpty() -> throw PartyForThisNameNotFound(name)
             partiesOfThisName.size == 1 -> partiesOfThisName.first()
@@ -345,11 +361,20 @@ class WebApi(val rpcOps: CordaRPCOps) {
         return rpcOps.wellKnownPartyFromX500Name(party) ?: throw PartyForThisCordaX500NameNotFound(party)
     }
 
-    private fun getPartiesOnThisBusinessNetwork(role : String) : List<PartyNameAndMembershipMetadata> {
+    private fun getPartiesOnThisBusinessNetwork(role : String) : List<PartyAndMembershipMetadata> {
         return getPartiesOnThisBusinessNetwork().filter { it.membershipMetadata.role.equals(role,true) }
     }
 
-    private fun getPartiesOnThisBusinessNetwork() : List<PartyNameAndMembershipMetadata> {
+    private fun getPartiesOnThisBusinessNetwork()  : List<PartyAndMembershipMetadata> {
+        val flowHandle = rpcOps.startTrackedFlow(::GetMembersFlow,false)
+        return flowHandle.returnValue.getOrThrow()
+    }
+
+    private fun getPartyNamesOnThisBusinessNetwork(role : String) : List<PartyNameAndMembershipMetadata> {
+        return getPartyNamesOnThisBusinessNetwork().filter { it.membershipMetadata.role.equals(role,true) }
+    }
+
+    private fun getPartyNamesOnThisBusinessNetwork() : List<PartyNameAndMembershipMetadata> {
         val flowHandle = rpcOps.startTrackedFlow(::GetMembersFlow,false)
         return flowHandle.returnValue.getOrThrow().map { PartyNameAndMembershipMetadata(it.party.toString(),it.membershipMetadata) }
     }

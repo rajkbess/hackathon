@@ -45,34 +45,46 @@ class NodeDriver {
 
             establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes, 0, 3, 0, 2, 1,0)
 
+            putSomeTradesOnTheNetwork(dealer1, dealer2, ccp)
+
             println("----- Network set up -----")
             nodes.forEach {
                 println("${it.testIdentity.name.organisation} web url is ${it.webHandle.listenAddress}")
             }
-
-            putSomeTradesOnTheNetwork(dealer1, dealer2)
         }
     }
 
-    private fun putSomeTradesOnTheNetwork(dealer1 : MemberNode, dealer2 : MemberNode) {
+    private fun putSomeTradesOnTheNetwork(dealer1 : MemberNode, dealer2 : MemberNode, ccp : MemberNode) {
         val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
         val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_2.json").readText()
+        val cdmContract3 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_3.json").readText()
         assertEquals(0, dealer1.getDraftContracts().size)
         assertEquals(0, dealer2.getDraftContracts().size)
 
         dealer1.persistDraftCDMContractOnLedger(cdmContract1)
         dealer1.persistDraftCDMContractOnLedger(cdmContract2)
+        dealer2.persistDraftCDMContractOnLedger(cdmContract3)
 
-        assertEquals(2, dealer1.getDraftContracts().size)
-        assertEquals(2, dealer2.getDraftContracts().size)
+        assertEquals(3, dealer1.getDraftContracts().size)
+        assertEquals(3, dealer2.getDraftContracts().size)
 
         dealer2.approveDraftCDMContractOnLedger("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+        dealer1.approveDraftCDMContractOnLedger("1234TradeId_3","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
 
         assertEquals(1, dealer1.getDraftContracts().size)
         assertEquals(1, dealer2.getDraftContracts().size)
 
-        assertEquals(1, dealer1.getLiveContracts().size)
-        assertEquals(1, dealer2.getLiveContracts().size)
+        assertEquals(2, dealer1.getLiveContracts().size)
+        assertEquals(2, dealer2.getLiveContracts().size)
+        assertEquals(0, ccp.getLiveContracts().size)
+
+        dealer1.clearCDMContract("1234TradeId_3","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+
+        assertEquals(2, dealer1.getLiveContracts().size)
+        assertEquals(2, dealer2.getLiveContracts().size)
+        assertEquals(1, dealer1.getNovatedContracts().size)
+        assertEquals(1, dealer2.getNovatedContracts().size)
+        assertEquals(2, ccp.getLiveContracts().size)
 
         println("Test trades uploaded")
     }

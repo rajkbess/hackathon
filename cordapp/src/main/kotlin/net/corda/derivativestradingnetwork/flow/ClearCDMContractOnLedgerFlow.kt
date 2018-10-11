@@ -8,8 +8,10 @@ import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.cdmsupport.CDMContractState
 import net.corda.cdmsupport.eventparsing.createContractIdentifier
 import net.corda.cdmsupport.eventparsing.parseContractFromJson
+import net.corda.cdmsupport.eventparsing.parseEventFromJson
 import net.corda.cdmsupport.eventparsing.serializeCdmObjectIntoJson
 import net.corda.cdmsupport.network.NetworkMap
+import net.corda.cdmsupport.transactionbuilding.CdmTransactionBuilder
 import net.corda.cdmsupport.vaultquerying.DefaultCdmVaultQuery
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
@@ -28,7 +30,19 @@ class ClearCDMContractOnLedgerFlow(val networkMap : NetworkMap, val clearingHous
         val cdmVaultQuery = DefaultCdmVaultQuery(serviceHub)
         val bilateralContract = cdmVaultQuery.getCdmContractState(listOf(contractIdentifier))
         val cdmClearingEvent = createClearingCdmEvent(bilateralContract.state.data)
-        return subFlow(PersistCDMEventOnLedgerFlow(cdmClearingEvent,networkMap))
+        return persistCDMEventOnTheLedger(cdmClearingEvent)
+    }
+
+    @Suspendable
+    fun persistCDMEventOnTheLedger(eventJson : String) : SignedTransaction {
+        val event = parseEventFromJson(eventJson)
+        val notary = serviceHub.networkMapCache.notaryIdentities.first()
+        val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub))
+        cdmTransactionBuilder.verify(serviceHub)
+        val signedByMe = serviceHub.signInitialTransaction(cdmTransactionBuilder)
+        val counterPartySessions = cdmTransactionBuilder.getPartiesToSign().minus(ourIdentity).map { initiateFlow(it) }
+        val stx = subFlow(CollectSignaturesFlow(signedByMe, counterPartySessions))
+        return subFlow(FinalityFlow(stx))
     }
 
 
@@ -173,9 +187,35 @@ class ClearCDMContractOnLedgerFlowResponder(flowSession : FlowSession) : Busines
         val signTransactionFlow = object : SignTransactionFlow(flowSession) {
             override fun checkTransaction(stx: SignedTransaction) {
                 //if you are the clearing house look at the notional
+                if(areWeTheClearingHouse()) {
+                    verifyNotionalNotBiggerThan(stx, 1000000000)
+                }
             }
         }
 
         return subFlow(signTransactionFlow)
+    }
+
+    @Suspendable
+    private fun verifyNotionalNotBiggerThan(stx: SignedTransaction, limit : Long) {
+        val ledgerTx = stx.toLedgerTransaction(serviceHub, false)
+        val newContracts = ledgerTx.outputStates.filter { it is CDMContractState }.map { it as CDMContractState }
+        newContracts.forEach { verifyNotionalNotBiggerThan(it.contract(), limit) }
+    }
+
+    private fun verifyNotionalNotBiggerThan(contract : Contract, limit : Long) {
+        contract.contractualProduct.economicTerms.payout.interestRatePayout.forEach {
+            if(it.quantity.notionalSchedule.notionalStepSchedule.initialValue.toLong() > limit) {
+                val contractId = contract.contractIdentifier.single().identifierValue.identifier
+                throw FlowException("The notional on the contract $contractId exceeds limit")
+            }
+        }
+    }
+
+    @Suspendable
+    private fun areWeTheClearingHouse() : Boolean {
+        val members = subFlow(GetMembersFlow(false))
+        val us = members.filter { it.party == ourIdentity }.single()
+        return us.membershipMetadata.role.equals("ccp",true)
     }
 }

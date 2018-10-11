@@ -43,21 +43,6 @@ class WebApi(val rpcOps: CordaRPCOps) {
 
     //######## CDM Events related REST endpoints ##########
     @POST
-    @Path("persistCDMEvent")
-    @Produces(MediaType.APPLICATION_JSON)
-    fun persistCDMEvent(cdmEventJson: String): Response {
-        return try {
-            val networkMap = createNetworkMap()
-            val flowHandle = rpcOps.startTrackedFlow(::PersistCDMEventOnLedgerFlow, cdmEventJson, networkMap)
-            val result = flowHandle.returnValue.getOrThrow()
-            Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
-        } catch (ex: Throwable) {
-            logger.error(ex.message, ex)
-            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
-        }
-    }
-
-    @POST
     @Path("persistDraftCDMContract")
     @Produces(MediaType.APPLICATION_JSON)
     fun persistDraftCDMContract(cdmContractJson: String): Response {

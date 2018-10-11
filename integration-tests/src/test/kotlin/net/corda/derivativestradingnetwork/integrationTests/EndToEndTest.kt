@@ -131,6 +131,23 @@ class EndToEndTest {
         }
     }
 
+    @Test
+    fun `Clearing house will not accept notional over 1000000000`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, ccp, _ ->
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_4.json").readText()
+            assertNumbersOfContracts(listOf(dealer1,dealer2), 0, 0)
+            dealer1.persistDraftCDMContractOnLedger(cdmContract1)
+            assertNumbersOfContracts(listOf(dealer1,dealer2), 1, 0)
+            dealer2.approveDraftCDMContractOnLedger("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertNumbersOfContracts(listOf(dealer1,dealer2),0,1)
+            dealer1.clearCDMContract("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",null,null,"exceeds limit")
+            assertNumbersOfContracts(listOf(dealer1,dealer2),0, 1, 0)
+            confirmTradeIdentity("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts().first() as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getLiveContracts().first() as Map<String,Any>)
+            assertNumbersOfContracts(ccp, 0, 0, 0)
+        }
+    }
+
     private fun confirmTradeIdentity(contractId : String, contractIdScheme : String, trade : Map<String,Any>) {
         assertEquals(contractId, (((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifier").toString())
         assertEquals(contractIdScheme, (((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifierScheme").toString())

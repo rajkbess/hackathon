@@ -13,12 +13,6 @@ import kotlin.test.assertTrue
 class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Boolean) : BusinessNetworkNode(driver, testIdentity, autoStart) {
 
     //cdm events and contracts related
-    fun persistCDMEventOnLedger(cdmEventJson : String) {
-        val response = postJsonToUrl(cdmEventJson, "http://${webHandle.listenAddress}/api/memberApi/persistCDMEvent")
-        assertEquals("OK", response.message())
-        assertTrue(response.isSuccessful)
-    }
-
     fun persistDraftCDMContractOnLedger(cdmContractJson : String) {
         val response = postJsonToUrl(cdmContractJson, "http://${webHandle.listenAddress}/api/memberApi/persistDraftCDMContract")
         assertEquals("OK", response.message())

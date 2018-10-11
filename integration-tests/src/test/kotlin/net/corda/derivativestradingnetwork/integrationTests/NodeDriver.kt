@@ -36,14 +36,15 @@ class NodeDriver {
             val dealer1 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D01", "", "US")), false)
             val dealer2 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D02", "", "US")), false)
             val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
+            val regulator = MemberNode(this, TestIdentity(CordaX500Name("REGULATOR-R01", "", "US")), false)
 
-            val nonBnoNodes = listOf(dealer1, dealer2, ccp)
+            val nonBnoNodes = listOf(dealer1, dealer2, ccp, regulator)
             val nodes = listOf(bno) + nonBnoNodes
 
             nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }.forEach { it.confirmNodeIsOnTheNetwork() }
             println("Establishing business network")
 
-            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes, 0, 3, 0, 2, 1,0)
+            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes, 0, 4, 0, 2, 1,0,1)
 
             putSomeTradesOnTheNetwork(dealer1, dealer2, ccp)
 
@@ -89,7 +90,7 @@ class NodeDriver {
         println("Test trades uploaded")
     }
 
-    private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>, existingMembers : Int, expectedMembers : Int, expectedClients : Int, expectedDealers : Int, expectedCcps : Int, expectedMatchingServices : Int) {
+    private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>, existingMembers : Int, expectedMembers : Int, expectedClients : Int, expectedDealers : Int, expectedCcps : Int, expectedMatchingServices : Int, expectedRegulators : Int) {
         //at the beginning there are no members
         assertEquals(existingMembers, bno.getMembershipStates().size)
 
@@ -107,7 +108,7 @@ class NodeDriver {
         }
 
         //check members can see one another
-        membersToBe.forEach { confirmVisibility(it, expectedMembers, expectedClients, expectedDealers, expectedCcps, expectedMatchingServices) }
+        membersToBe.forEach { confirmVisibility(it, expectedMembers, expectedClients, expectedDealers, expectedCcps, expectedMatchingServices, expectedRegulators) }
     }
 
 
@@ -118,11 +119,12 @@ class NodeDriver {
         assertEquals(membershipsBefore + 1, bno.getMembershipStates().size)
     }
 
-    private fun confirmVisibility(memberNode: MemberNode, allMembers: Int, clients: Int, dealers: Int, ccps: Int, matchingServices : Int) {
+    private fun confirmVisibility(memberNode: MemberNode, allMembers: Int, clients: Int, dealers: Int, ccps: Int, matchingServices : Int, regulators : Int) {
         assertEquals(allMembers, memberNode.getMembersVisibleToNode().size)
         assertEquals(clients, memberNode.getMembersVisibleToNode("clients").size)
         assertEquals(dealers, memberNode.getMembersVisibleToNode("dealers").size)
         assertEquals(ccps, memberNode.getMembersVisibleToNode("ccps").size)
         assertEquals(matchingServices, memberNode.getMembersVisibleToNode("matchingServices").size)
+        assertEquals(regulators, memberNode.getMembersVisibleToNode("regulators").size)
     }
 }

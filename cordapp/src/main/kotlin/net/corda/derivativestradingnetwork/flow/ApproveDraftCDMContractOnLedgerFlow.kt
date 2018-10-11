@@ -52,7 +52,15 @@ class ApproveDraftCDMContractOnLedgerFlow(val networkMap : NetworkMap, val contr
         val signedByMe = serviceHub.signInitialTransaction(cdmTransactionBuilder)
         val counterPartySessions = cdmTransactionBuilder.getPartiesToSign().minus(ourIdentity).map { initiateFlow(it) }
         val stx = subFlow(CollectSignaturesFlow(signedByMe, counterPartySessions))
-        return subFlow(FinalityFlow(stx))
+        val finalisedTx = subFlow(FinalityFlow(stx))
+        sendToRegulators()
+        return finalisedTx
+    }
+
+    @Suspendable
+    private fun sendToRegulators() {
+        val regulators = getPartiesOnThisBusinessNetwork().filter { it.membershipMetadata.role.equals("regulator",true) }.map { it.party }
+        regulators.forEach { subFlow(ShareContractFlow(it, contractId, contractIdScheme)) }
     }
 
 

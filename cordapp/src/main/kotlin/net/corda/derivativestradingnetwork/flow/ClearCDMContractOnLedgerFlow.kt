@@ -30,11 +30,21 @@ class ClearCDMContractOnLedgerFlow(val networkMap : NetworkMap, val clearingHous
         val cdmVaultQuery = DefaultCdmVaultQuery(serviceHub)
         val bilateralContract = cdmVaultQuery.getCdmContractState(listOf(contractIdentifier))
         val cdmClearingEvent = createClearingCdmEvent(bilateralContract.state.data)
-        return persistCDMEventOnTheLedger(cdmClearingEvent)
+        val finalisedTx = persistCDMEventOnTheLedger(cdmClearingEvent)
+        sendToRegulators(finalisedTx)
+        return finalisedTx
     }
 
     @Suspendable
-    fun persistCDMEventOnTheLedger(eventJson : String) : SignedTransaction {
+    private fun sendToRegulators(signedTransaction: SignedTransaction) {
+        val regulators = getPartiesOnThisBusinessNetwork().filter { it.membershipMetadata.role.equals("regulator",true) }.map { it.party }
+        regulators.forEach {
+            subFlow(ShareTransactionFlow(it, signedTransaction))
+        }
+    }
+
+    @Suspendable
+    private fun persistCDMEventOnTheLedger(eventJson : String) : SignedTransaction {
         val event = parseEventFromJson(eventJson)
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
         val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub))
@@ -47,12 +57,12 @@ class ClearCDMContractOnLedgerFlow(val networkMap : NetworkMap, val clearingHous
 
 
     @Suspendable
-    fun getMembershipMetadata(party : Party) : MembershipMetadata {
+    private fun getMembershipMetadata(party : Party) : MembershipMetadata {
         return getPartiesOnThisBusinessNetwork().filter { it.party == party }.single().membershipMetadata
     }
 
     @Suspendable
-    fun getPartiesOnThisBusinessNetwork() : List<PartyAndMembershipMetadata> {
+    private fun getPartiesOnThisBusinessNetwork() : List<PartyAndMembershipMetadata> {
         return subFlow(GetMembersFlow(false))
     }
 
@@ -67,7 +77,7 @@ class ClearCDMContractOnLedgerFlow(val networkMap : NetworkMap, val clearingHous
         return serializeCdmObjectIntoJson(newTrade)
     }
 
-    fun createPartyContractIdentifier(contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null) : PartyContractIdentifier {
+    private fun createPartyContractIdentifier(contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null) : PartyContractIdentifier {
         val contractIdentifier = createContractIdentifier(contractId, contractIdScheme, issuer, partyReference)
 
         val partyContractIdentifierBuilder = PartyContractIdentifier.PartyContractIdentifierBuilder()

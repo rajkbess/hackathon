@@ -211,8 +211,36 @@ class EndToEndTest {
         }
     }
 
-    //@todo
-    //test that bilateral trades can be compressed
+    @Test
+    fun `Bilateral trades can be compressed`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, _, _, regulator ->
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+            val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_2.json").readText()
+            val cdmContract3 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_3.json").readText()
+            val cdmContract5 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_5.json").readText()
+
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract1, dealer1, dealer2)
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract2, dealer1, dealer2)
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract3, dealer1, dealer2)
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract5, dealer1, dealer2)
+
+            assertNumbersOfContracts(listOf(dealer1, dealer2, regulator),0,4, 0, 0)
+
+            dealer1.compressCDMContractsOnLedger(CompressionRequest(
+                    listOf(
+                            ContractIdAndContractIdScheme("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"),
+                            ContractIdAndContractIdScheme("1234TradeId_2","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"),
+                            ContractIdAndContractIdScheme("1234TradeId_3","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+                    )))
+
+            assertNumbersOfContracts(listOf(dealer1, dealer2, regulator),0,2, 0, 3)
+
+            //dealer 1 has two live trades, one the one not touched by compression and the other one the compressed one
+            confirmTradeIdentity("1234TradeId_5","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts()[0] as Map<String,Any>)
+            confirmTradeIdentity("CMP-","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts()[1] as Map<String,Any>, true)
+
+        }
+    }
 
     private fun confirmTradeIdentity(contractId : String, contractIdScheme : String, trade : Map<String,Any>, contractIdPrefixOnly : Boolean = false) {
         if(contractIdPrefixOnly) {
@@ -245,6 +273,21 @@ class EndToEndTest {
         assertEquals(party2NovatedBefore + 1, party2.getNovatedContracts().size)
 
         assertEquals(ccpLiveBefore + 2, ccp.getLiveContracts().size)
+    }
+
+    private fun insertTradeBilaterallyAndConfirmAssertions(cdmContractJson : String, party1 : MemberNode, party2 : MemberNode) {
+        val party1LiveBefore = party1.getLiveContracts().size
+        val party2LiveBefore = party2.getLiveContracts().size
+
+        val cdmContract = parseContractFromJson(cdmContractJson)
+        val contractId = cdmContract.contractIdentifier.single().identifierValue.identifier
+        val contractIdScheme = cdmContract.contractIdentifier.single().identifierValue.identifierScheme
+
+        party1.persistDraftCDMContractOnLedger(cdmContractJson)
+        party2.approveDraftCDMContractOnLedger(contractId, contractIdScheme)
+
+        assertEquals(party1LiveBefore + 1, party1.getLiveContracts().size)
+        assertEquals(party2LiveBefore + 1, party2.getLiveContracts().size)
     }
 
     private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {

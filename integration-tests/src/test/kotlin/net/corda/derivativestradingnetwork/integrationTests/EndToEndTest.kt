@@ -1,13 +1,17 @@
 package net.corda.derivativestradingnetwork.integrationTests
 
 import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.cdmsupport.eventparsing.parseContractFromJson
 import net.corda.core.identity.CordaX500Name
+import net.corda.derivativestradingnetwork.entity.CompressionRequest
+import net.corda.derivativestradingnetwork.entity.ContractIdAndContractIdScheme
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.*
 import org.junit.Test
 import java.lang.RuntimeException
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class EndToEndTest {
 
@@ -171,11 +175,76 @@ class EndToEndTest {
         }
     }
 
-    private fun confirmTradeIdentity(contractId : String, contractIdScheme : String, trade : Map<String,Any>) {
-        assertEquals(contractId, (((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifier").toString())
+    @Test
+    fun `Cleared trades can be compressed`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, ccp, _, regulator ->
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+            val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_2.json").readText()
+            val cdmContract3 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_3.json").readText()
+            val cdmContract5 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_5.json").readText()
+
+            insertTradeBilaterallyAndClearAndConfirmAssertions(cdmContract1, dealer1, dealer2, ccp)
+            insertTradeBilaterallyAndClearAndConfirmAssertions(cdmContract2, dealer1, dealer2, ccp)
+            insertTradeBilaterallyAndClearAndConfirmAssertions(cdmContract3, dealer1, dealer2, ccp)
+            insertTradeBilaterallyAndClearAndConfirmAssertions(cdmContract5, dealer1, dealer2, ccp)
+
+            assertNumbersOfContracts(listOf(dealer1, dealer2),0,4, 4, 0)
+            assertNumbersOfContracts(ccp, 0, 8, 0, 0)
+
+            dealer1.compressCDMContractsOnLedger(CompressionRequest(
+                    listOf(
+                            ContractIdAndContractIdScheme("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"),
+                            ContractIdAndContractIdScheme("1234TradeId_2_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"),
+                            ContractIdAndContractIdScheme("1234TradeId_3_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+                    )))
+
+            assertNumbersOfContracts(dealer1,0,2, 4, 3)
+            assertNumbersOfContracts(dealer2, 0, 4, 4, 0)
+            assertNumbersOfContracts(ccp, 0, 6, 0, 3)
+            assertNumbersOfContracts(regulator, 0, 6, 4, 3)
+
+            //dealer 1 has two live trades, one the one not touched by compression and the other one the compressed one
+            confirmTradeIdentity("1234TradeId_5_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts()[0] as Map<String,Any>)
+            confirmTradeIdentity("CMP-","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts()[1] as Map<String,Any>, true)
+
+        }
+    }
+
+    //@todo
+    //test that bilateral trades can be compressed
+
+    private fun confirmTradeIdentity(contractId : String, contractIdScheme : String, trade : Map<String,Any>, contractIdPrefixOnly : Boolean = false) {
+        if(contractIdPrefixOnly) {
+            assertTrue((((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifier").toString().startsWith(contractId))
+        } else {
+            assertEquals(contractId, (((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifier").toString())
+        }
+
         assertEquals(contractIdScheme, (((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifierScheme").toString())
     }
 
+    private fun insertTradeBilaterallyAndClearAndConfirmAssertions(cdmContractJson : String, party1 : MemberNode, party2 : MemberNode, ccp : MemberNode) {
+        val party1LiveBefore = party1.getLiveContracts().size
+        val party1NovatedBefore = party1.getNovatedContracts().size
+        val party2LiveBefore = party2.getLiveContracts().size
+        val party2NovatedBefore = party2.getNovatedContracts().size
+        val ccpLiveBefore = ccp.getLiveContracts().size
+
+        val cdmContract = parseContractFromJson(cdmContractJson)
+        val contractId = cdmContract.contractIdentifier.single().identifierValue.identifier
+        val contractIdScheme = cdmContract.contractIdentifier.single().identifierValue.identifierScheme
+        party1.persistDraftCDMContractOnLedger(cdmContractJson)
+        party2.approveDraftCDMContractOnLedger(contractId, contractIdScheme)
+        party1.clearCDMContract(contractId,contractIdScheme)
+
+        assertEquals(party1LiveBefore + 1, party1.getLiveContracts().size)
+        assertEquals(party1NovatedBefore + 1, party1.getNovatedContracts().size)
+
+        assertEquals(party2LiveBefore + 1, party2.getLiveContracts().size)
+        assertEquals(party2NovatedBefore + 1, party2.getNovatedContracts().size)
+
+        assertEquals(ccpLiveBefore + 2, ccp.getLiveContracts().size)
+    }
 
     private fun establishBusinessNetworkAndConfirmAssertions(bno : BnoNode, membersToBe : List<MemberNode>) {
         //at the beginning there are no members
@@ -213,13 +282,14 @@ class EndToEndTest {
         assertEquals(regulators,memberNode.getMembersVisibleToNode("regulators").size)
     }
 
-    private fun assertNumbersOfContracts(memberNodes : List<MemberNode>, draft : Int, live : Int = 0, novated : Int = 0) {
-        memberNodes.forEach { assertNumbersOfContracts(it, draft, live, novated) }
+    private fun assertNumbersOfContracts(memberNodes : List<MemberNode>, draft : Int, live : Int = 0, novated : Int = 0, terminated : Int = 0) {
+        memberNodes.forEach { assertNumbersOfContracts(it, draft, live, novated, terminated) }
     }
 
-    private fun assertNumbersOfContracts(memberNode : MemberNode, draft : Int, live : Int = 0, novated : Int = 0) {
-        assertEquals(draft, memberNode.getDraftContracts().size)
-        assertEquals(live, memberNode.getLiveContracts().size)
-        assertEquals(novated, memberNode.getNovatedContracts().size)
+    private fun assertNumbersOfContracts(memberNode : MemberNode, draft : Int, live : Int = 0, novated : Int = 0, terminated : Int = 0) {
+        assertEquals(draft, memberNode.getDraftContracts().size,"Failed on ${memberNode.testIdentity.name.organisation}")
+        assertEquals(live, memberNode.getLiveContracts().size,"Failed on ${memberNode.testIdentity.name.organisation}")
+        assertEquals(novated, memberNode.getNovatedContracts().size,"Failed on ${memberNode.testIdentity.name.organisation}")
+        assertEquals(terminated, memberNode.getTerminatedContracts().size,"Failed on ${memberNode.testIdentity.name.organisation}")
     }
 }

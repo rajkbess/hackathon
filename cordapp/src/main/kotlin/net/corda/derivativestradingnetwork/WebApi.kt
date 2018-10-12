@@ -20,8 +20,8 @@ import net.corda.core.node.services.Vault
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
+import net.corda.derivativestradingnetwork.entity.CompressionRequest
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
-import net.corda.derivativestradingnetwork.entity.SettlementInstruction
 import net.corda.derivativestradingnetwork.flow.*
 import net.corda.webserver.services.WebServerPluginRegistry
 import org.slf4j.Logger
@@ -49,6 +49,21 @@ class WebApi(val rpcOps: CordaRPCOps) {
         return try {
             val networkMap = createNetworkMap()
             val flowHandle = rpcOps.startTrackedFlow(::PersistDraftCDMContractOnLedgerFlow, cdmContractJson, networkMap)
+            val result = flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @POST
+    @Path("compressCDMContracts")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun compressCDMContracts(compressionRequest: CompressionRequest): Response {
+        return try {
+            val networkMap = createNetworkMap()
+            val flowHandle = rpcOps.startTrackedFlow(::CompressCDMContractsOnLedgerFlow, networkMap, compressionRequest)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
         } catch (ex: Throwable) {

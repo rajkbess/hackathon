@@ -2,6 +2,7 @@ package net.corda.derivativestradingnetwork.integrationTests
 
 import com.google.common.reflect.TypeToken
 import net.corda.businessnetworks.membership.states.MembershipMetadata
+import net.corda.derivativestradingnetwork.entity.CompressionRequest
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
@@ -15,6 +16,12 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
     //cdm events and contracts related
     fun persistDraftCDMContractOnLedger(cdmContractJson : String) {
         val response = postJsonToUrl(cdmContractJson, "http://${webHandle.listenAddress}/api/memberApi/persistDraftCDMContract")
+        assertEquals("OK", response.message())
+        assertTrue(response.isSuccessful)
+    }
+
+    fun compressCDMContractsOnLedger(compressionRequest: CompressionRequest) {
+        val response = postObjectAsJsonToUrl(compressionRequest, "http://${webHandle.listenAddress}/api/memberApi/compressCDMContracts")
         assertEquals("OK", response.message())
         assertTrue(response.isSuccessful)
     }

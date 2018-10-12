@@ -21,11 +21,12 @@ import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import net.corda.derivativestradingnetwork.entity.CompressionRequest
+import net.corda.derivativestradingnetwork.entity.ContractIdAndContractIdScheme
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
+import net.corda.derivativestradingnetwork.entity.ShareRequest
 import net.corda.derivativestradingnetwork.flow.*
 import net.corda.webserver.services.WebServerPluginRegistry
 import org.slf4j.Logger
-import java.time.LocalDate
 import java.util.function.Function
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
@@ -75,10 +76,12 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @POST
     @Path("approveDraftCDMContract")
     @Produces(MediaType.APPLICATION_JSON)
-    fun approveDraftCDMContract(@HeaderParam("contractId") contractId: String, @HeaderParam("contractIdScheme") contractIdScheme: String,@HeaderParam("issuer") issuer: String?,@HeaderParam("partyReference") partyReference: String?): Response {
+    fun approveDraftCDMContract(contractIdAndContractIdScheme: ContractIdAndContractIdScheme): Response {
         return try {
             val networkMap = createNetworkMap()
-            val flowHandle = rpcOps.startTrackedFlow(::ApproveDraftCDMContractOnLedgerFlow, networkMap, contractId, contractIdScheme, issuer, partyReference, 1000)
+            val contractId = contractIdAndContractIdScheme.contractId
+            val contractIdScheme = contractIdAndContractIdScheme.contractIdScheme
+            val flowHandle = rpcOps.startTrackedFlow(::ApproveDraftCDMContractOnLedgerFlow, networkMap, contractId, contractIdScheme, null, null, 1000)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
         } catch (ex: Throwable) {
@@ -90,11 +93,13 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @POST
     @Path("clearCDMContract")
     @Produces(MediaType.APPLICATION_JSON)
-    fun clearCDMContract(@HeaderParam("contractId") contractId: String, @HeaderParam("contractIdScheme") contractIdScheme: String,@HeaderParam("issuer") issuer: String?,@HeaderParam("partyReference") partyReference: String?): Response {
+    fun clearCDMContract(contractIdAndContractIdScheme: ContractIdAndContractIdScheme): Response {
         return try {
             val networkMap = createNetworkMap()
             val ccp = getPartiesOnThisBusinessNetwork("ccp").single().party
-            val flowHandle = rpcOps.startTrackedFlow(::ClearCDMContractOnLedgerFlow, networkMap, ccp, contractId, contractIdScheme, issuer, partyReference)
+            val contractId = contractIdAndContractIdScheme.contractId
+            val contractIdScheme = contractIdAndContractIdScheme.contractIdScheme
+            val flowHandle = rpcOps.startTrackedFlow(::ClearCDMContractOnLedgerFlow, networkMap, ccp, contractId, contractIdScheme, null, null)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity("Transaction id ${result.id} committed to ledger.\n").build()
         } catch (ex: Throwable) {
@@ -106,11 +111,14 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @POST
     @Path("shareContract")
     @Produces(MediaType.APPLICATION_JSON)
-    fun shareContract(@HeaderParam("shareWith") shareWith: String, @HeaderParam("contractId") contractId: String, @HeaderParam("contractIdScheme") contractIdScheme: String,@HeaderParam("issuer") issuer: String?,@HeaderParam("partyReference") partyReference: String?) : Response {
+    fun shareContract(shareRequest: ShareRequest) : Response {
         return try {
+            val contractId = shareRequest.contractToShare.contractId
+            val contractIdScheme = shareRequest.contractToShare.contractIdScheme
+            val shareWith = shareRequest.shareWith
             logger.info("Sharing contract id $contractId, contract id scheme $contractIdScheme with $shareWith")
             val party = getPartyFromThisBusinessNetwork(shareWith)
-            val flowHandle = rpcOps.startTrackedFlow(::ShareContractFlow, party, contractId, contractIdScheme, issuer, partyReference)
+            val flowHandle = rpcOps.startTrackedFlow(::ShareContractFlow, party, contractId, contractIdScheme, null, null)
             flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity("Contract shared with $shareWith.\n").build()
         } catch (ex: Throwable) {

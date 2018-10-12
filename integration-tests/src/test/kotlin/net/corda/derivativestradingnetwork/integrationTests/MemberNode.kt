@@ -3,7 +3,9 @@ package net.corda.derivativestradingnetwork.integrationTests
 import com.google.common.reflect.TypeToken
 import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.derivativestradingnetwork.entity.CompressionRequest
+import net.corda.derivativestradingnetwork.entity.ContractIdAndContractIdScheme
 import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
+import net.corda.derivativestradingnetwork.entity.ShareRequest
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
 import okhttp3.Request
@@ -26,10 +28,11 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         assertTrue(response.isSuccessful)
     }
 
-    fun approveDraftCDMContractOnLedger(contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null, expectErrorMessage : String? = null) {
+    fun approveDraftCDMContractOnLedger(contractId : String, contractIdScheme : String, expectErrorMessage : String? = null) {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/approveDraftCDMContract"
-        val response = postHeadersToUrl(url, mapOf("contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference).filter { it.value != null } as Map<String,String>)
+        val contractIdAndContractIdScheme = ContractIdAndContractIdScheme(contractId, contractIdScheme)
+        val response = postObjectAsJsonToUrl(contractIdAndContractIdScheme, url)
 
         if(expectErrorMessage == null) {
             assertTrue(response.isSuccessful)
@@ -41,10 +44,11 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
 
     }
 
-    fun clearCDMContract(contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null, expectErrorMessage : String? = null) {
+    fun clearCDMContract(contractId : String, contractIdScheme : String, expectErrorMessage : String? = null) {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/clearCDMContract"
-        val response = postHeadersToUrl(url, mapOf("contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference).filter { it.value != null } as Map<String,String>)
+        val contractIdAndContractIdScheme = ContractIdAndContractIdScheme(contractId, contractIdScheme)
+        val response = postObjectAsJsonToUrl(contractIdAndContractIdScheme, url)
 
         if(expectErrorMessage == null) {
             assertTrue(response.isSuccessful)
@@ -56,16 +60,11 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
 
     }
 
-    fun processSettlementInstruction(settlementInstructionJson : String) {
-        val response = postJsonToUrl(settlementInstructionJson, "http://${webHandle.listenAddress}/api/memberApi/processSettlementInstruction")
-        assertEquals("OK", response.message())
-        assertTrue(response.isSuccessful)
-    }
-
-    fun shareContract(shareWith : String, contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null) {
+    fun shareContract(shareWith : String, contractId : String, contractIdScheme : String) {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/shareContract"
-        val response = postHeadersToUrl(url, mapOf("shareWith" to shareWith,"contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference).filter { it.value != null } as Map<String,String>)
+        val contractIdAndContractIdScheme = ContractIdAndContractIdScheme(contractId, contractIdScheme)
+        val response = postObjectAsJsonToUrl(ShareRequest(shareWith, contractIdAndContractIdScheme), url)
 
         assertTrue(response.isSuccessful)
         assertEquals("OK", response.message())

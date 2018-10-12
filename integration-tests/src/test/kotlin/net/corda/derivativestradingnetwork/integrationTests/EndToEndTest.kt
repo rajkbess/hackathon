@@ -109,7 +109,7 @@ class EndToEndTest {
             assertNumbersOfContracts(listOf(dealer1,dealer2), 0, 0)
             dealer1.persistDraftCDMContractOnLedger(cdmContract1)
             assertNumbersOfContracts(listOf(dealer1,dealer2),1,0)
-            dealer1.approveDraftCDMContractOnLedger("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",null,null,"We never proposed this draft")
+            dealer1.approveDraftCDMContractOnLedger("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/","We never proposed this draft")
         }
     }
 
@@ -146,7 +146,7 @@ class EndToEndTest {
             assertNumbersOfContracts(listOf(dealer1,dealer2), 1, 0)
             dealer2.approveDraftCDMContractOnLedger("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
             assertNumbersOfContracts(listOf(dealer1,dealer2),0,1)
-            dealer1.clearCDMContract("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",null,null,"exceeds limit")
+            dealer1.clearCDMContract("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/","exceeds limit")
             assertNumbersOfContracts(listOf(dealer1,dealer2),0, 1, 0)
             confirmTradeIdentity("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts().first() as Map<String,Any>)
             confirmTradeIdentity("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getLiveContracts().first() as Map<String,Any>)

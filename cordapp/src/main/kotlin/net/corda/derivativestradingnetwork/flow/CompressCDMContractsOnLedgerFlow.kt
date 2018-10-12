@@ -17,6 +17,7 @@ import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.derivativestradingnetwork.entity.CompressionRequest
 import org.isda.cdm.*
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
 
@@ -110,18 +111,49 @@ class CompressCDMContractsOnLedgerFlow(val networkMap : NetworkMap, val compress
                       .replace("#CONTRACT_AFTER#",after)
     }
 
-
-
     private fun createNewTrade(contracts : List<Contract>, contractId : String) : String {
         //create it from one of the old trades
+        val totalNotional = contracts.map { it.contractualProduct.economicTerms.payout.interestRatePayout.first().quantity.notionalSchedule.notionalStepSchedule.initialValue.toLong() }.sum()
         val sampleContract = contracts.first()
         val contractIdScheme = sampleContract.contractIdentifier.single().identifierValue.identifierScheme
         val tradeContractBuilder = sampleContract.toBuilder()
         tradeContractBuilder.contractIdentifier.clear()
         tradeContractBuilder.addContractIdentifier(createPartyContractIdentifier(contractId, contractIdScheme))
         val newTrade = tradeContractBuilder.build()
+        val newTradeNewNotional = setNotional(newTrade, totalNotional)
+        return serializeCdmObjectIntoJson(newTradeNewNotional)
+    }
 
-        return serializeCdmObjectIntoJson(newTrade)
+    private fun setNotional(contract : Contract, notional : Long) : Contract {
+        val notionalStepScheduleBuilder = contract.contractualProduct.economicTerms.payout.interestRatePayout[0].quantity.notionalSchedule.notionalStepSchedule.toBuilder()
+        val notionalStepSchedule = notionalStepScheduleBuilder.setInitialValue(BigDecimal(notional)).build() as NonNegativeAmountSchedule
+
+        val notionalScheduleBuilder = contract.contractualProduct.economicTerms.payout.interestRatePayout[0].quantity.notionalSchedule.toBuilder()
+        val notionalSchedule = notionalScheduleBuilder.setNotionalStepSchedule(notionalStepSchedule).build()
+
+        val quantityBuilder = contract.contractualProduct.economicTerms.payout.interestRatePayout[0].quantity.toBuilder()
+        val quantity = quantityBuilder.setNotionalSchedule(notionalSchedule).build()
+
+        val interestPayoutOneBuilder = contract.contractualProduct.economicTerms.payout.interestRatePayout[0].toBuilder()
+        val interestPayoutTwoBuilder = contract.contractualProduct.economicTerms.payout.interestRatePayout[1].toBuilder()
+
+        val interestPayoutOne = interestPayoutOneBuilder.setQuantity(quantity).build()
+        val interestPayoutTwo = interestPayoutTwoBuilder.setQuantity(quantity).build()
+
+        val payoutBuilder = contract.contractualProduct.economicTerms.payout.toBuilder()
+        payoutBuilder.interestRatePayout.clear()
+        payoutBuilder.addInterestRatePayout(interestPayoutOne)
+        payoutBuilder.addInterestRatePayout(interestPayoutTwo)
+        val payout = payoutBuilder.build()
+
+        val economicTermsBuilder = contract.contractualProduct.economicTerms.toBuilder()
+        val economicTerms = economicTermsBuilder.setPayout(payout).build()
+
+        val contractualProductBuilder = contract.contractualProduct.toBuilder()
+        val contractualProduct = contractualProductBuilder.setEconomicTerms(economicTerms).build()
+
+        val contractBuilder = contract.toBuilder()
+        return contractBuilder.setContractualProduct(contractualProduct).build()
     }
 
     private fun createPartyContractIdentifier(contractId : String, contractIdScheme : String, issuer : String? = null, partyReference : String? = null) : PartyContractIdentifier {

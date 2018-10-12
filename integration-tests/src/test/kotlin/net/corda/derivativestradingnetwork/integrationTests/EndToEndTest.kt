@@ -205,9 +205,11 @@ class EndToEndTest {
             assertNumbersOfContracts(regulator, 0, 6, 4, 3)
 
             //dealer 1 has two live trades, one the one not touched by compression and the other one the compressed one
-            confirmTradeIdentity("1234TradeId_5_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts()[0] as Map<String,Any>)
-            confirmTradeIdentity("CMP-","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts()[1] as Map<String,Any>, true)
-
+            val unaffectedTrade = dealer1.getLiveContracts()[0] as Map<String,Any>
+            val compressedTrade = dealer1.getLiveContracts()[1] as Map<String,Any>
+            confirmTradeIdentity("1234TradeId_5_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",unaffectedTrade)
+            confirmTradeIdentity("CMP-","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",compressedTrade, true)
+            confirmTradeNotional(compressedTrade,604750000)
         }
     }
 
@@ -236,10 +238,24 @@ class EndToEndTest {
             assertNumbersOfContracts(listOf(dealer1, dealer2, regulator),0,2, 0, 3)
 
             //dealer 1 has two live trades, one the one not touched by compression and the other one the compressed one
-            confirmTradeIdentity("1234TradeId_5","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts()[0] as Map<String,Any>)
-            confirmTradeIdentity("CMP-","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts()[1] as Map<String,Any>, true)
-
+            val unaffectedTrade = dealer1.getLiveContracts()[0] as Map<String,Any>
+            val compressedTrade = dealer1.getLiveContracts()[1] as Map<String,Any>
+            confirmTradeIdentity("1234TradeId_5","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",unaffectedTrade)
+            confirmTradeIdentity("CMP-","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",compressedTrade,true)
+            confirmTradeNotional(compressedTrade,604750000)
         }
+    }
+
+    private fun confirmTradeNotional(trade : Map<String,Any>, expectedNotional : Long) {
+        val interestRatePayouts = getValueForKey(getValueForKey(getValueForKey(getValueForKey(trade,"contractualProduct"),"economicTerms"),"payout"),"interestRatePayout") as List<Map<String,Any>>
+        interestRatePayouts.forEach {
+            val notional = getValueForKey(getValueForKey(getValueForKey(getValueForKey(it,"quantity")  ,"notionalSchedule") ,"notionalStepSchedule"),"initialValue") as Double
+            assertEquals(expectedNotional,notional.toLong())
+        }
+    }
+
+    private fun getValueForKey(map : Any, key : String) : Any {
+        return (map as Map<String,Any>).get(key)!!
     }
 
     private fun confirmTradeIdentity(contractId : String, contractIdScheme : String, trade : Map<String,Any>, contractIdPrefixOnly : Boolean = false) {

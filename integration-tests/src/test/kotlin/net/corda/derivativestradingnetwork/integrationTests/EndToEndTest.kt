@@ -190,6 +190,7 @@ class EndToEndTest {
 
             assertNumbersOfContracts(listOf(dealer1, dealer2),0,4, 4, 0)
             assertNumbersOfContracts(ccp, 0, 8, 0, 0)
+            assertNumbersOfContracts(regulator, 0, 8, 4, 0)
 
             dealer1.compressCDMContractsOnLedger(CompressionRequest(
                     listOf(

@@ -11,16 +11,9 @@
 
 ./runNode.sh BNO-DTN 10010 && sleep 60
 ./runNode.sh CCP-P01 10100 && sleep 60
-
-./runNode.sh CLIENT-C01 10020 && sleep 60
-./runNode.sh CLIENT-C02 10030 && sleep 60
-./runNode.sh CLIENT-C03 10040 && sleep 60
-./runNode.sh CLIENT-C04 10050 && sleep 60
-./runNode.sh CLIENT-C05 10060 && sleep 60
-
-./runNode.sh DEALER-D01 10070 && sleep 60
-./runNode.sh DEALER-D02 10080 && sleep 60
-./runNode.sh DEALER-D03 10090 && sleep 60
+./runNode.sh REGULATOR-R01 10040 && sleep 60
+./runNode.sh DEALER-D01 10020 && sleep 60
+./runNode.sh DEALER-D02 10030 && sleep 60
 
 echo "All nodes started"
 

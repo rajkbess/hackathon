@@ -1,6 +1,7 @@
 package net.corda.derivativestradingnetwork.integrationTests
 
 import com.google.gson.*
+import net.corda.cdmsupport.eventparsing.parseContractFromJson
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.core.TestIdentity
@@ -8,6 +9,7 @@ import net.corda.testing.driver.DriverDSL
 import net.corda.testing.driver.NodeHandle
 import net.corda.testing.driver.WebserverHandle
 import okhttp3.*
+import org.isda.cdm.Contract
 import java.lang.reflect.Type
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -128,6 +130,10 @@ abstract class BusinessNetworkNode(val driver : DriverDSL, val testIdentity : Te
         }).registerTypeAdapter(Instant::class.java, object : JsonDeserializer<Instant> {
             override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Instant {
                 return Instant.ofEpochSecond(json!!.asLong)
+            }
+        }).registerTypeAdapter(Contract::class.java, object : JsonDeserializer<Contract> {
+            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Contract {
+                return parseContractFromJson(json.toString())
             }
         }).create()
     }

@@ -2,10 +2,7 @@ package net.corda.derivativestradingnetwork.integrationTests
 
 import com.google.common.reflect.TypeToken
 import net.corda.businessnetworks.membership.states.MembershipMetadata
-import net.corda.derivativestradingnetwork.entity.CompressionRequest
-import net.corda.derivativestradingnetwork.entity.ContractIdAndContractIdScheme
-import net.corda.derivativestradingnetwork.entity.PartyNameAndMembershipMetadata
-import net.corda.derivativestradingnetwork.entity.ShareRequest
+import net.corda.derivativestradingnetwork.entity.*
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
 import okhttp3.Request
@@ -71,6 +68,20 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
     }
 
     //vault query related
+    fun getAllContracts() : List<CDMContractAndState> {
+        val nodeAddress = webHandle.listenAddress
+        val url = "http://$nodeAddress/api/memberApi/allCDMContracts"
+        val request = Request.Builder().url(url).build()
+        val response = getPatientHttpClient().newCall(request).execute()
+
+        assertTrue(response.isSuccessful)
+        assertEquals("OK", response.message())
+
+        val responseInJson = response.body().string()
+        val desiredType = object : TypeToken<List<CDMContractAndState>>() {}.type
+        return getSuitableGson().fromJson(responseInJson,desiredType)
+    }
+
     fun getLiveContracts() : List<*> {
         return getCdmObjects("liveCDMContracts")
     }

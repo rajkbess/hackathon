@@ -138,6 +138,14 @@ class WebApi(val rpcOps: CordaRPCOps) {
 
     //######## Vault query related REST endpoints #############
     @GET
+    @Path("allCDMContracts")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun allCDMContracts() : Response {
+        return createResponseToQuery(VaultQueryType.ALL_CONTRACTS)
+    }
+
+    @GET
     @Path("liveCDMContracts")
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
@@ -238,6 +246,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
             Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
         }
     }
+
 
     private inline fun <reified T : ContractState> createResponseToContractsAuditQuery() : Response {
         val allStatesCriteria = QueryCriteria.VaultQueryCriteria(status = Vault.StateStatus.ALL)

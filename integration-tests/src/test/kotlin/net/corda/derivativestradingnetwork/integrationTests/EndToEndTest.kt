@@ -5,6 +5,7 @@ import net.corda.cdmsupport.eventparsing.parseContractFromJson
 import net.corda.core.identity.CordaX500Name
 import net.corda.derivativestradingnetwork.entity.CompressionRequest
 import net.corda.derivativestradingnetwork.entity.ContractIdAndContractIdScheme
+import net.corda.derivativestradingnetwork.entity.ContractStatus
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.*
@@ -243,6 +244,32 @@ class EndToEndTest {
             confirmTradeIdentity("1234TradeId_5","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",unaffectedTrade)
             confirmTradeIdentity("CMP-","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",compressedTrade,true)
             confirmTradeNotional(compressedTrade,604750000)
+        }
+    }
+
+    @Test
+    fun `One function to pull all trades can be used`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, ccp, _, _ ->
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+            val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_2.json").readText()
+            val cdmContract3 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_3.json").readText()
+            val cdmContract5 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_5.json").readText()
+
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract1, dealer1, dealer2)
+            insertTradeBilaterallyAndClearAndConfirmAssertions(cdmContract2, dealer1, dealer2, ccp)
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract5, dealer1, dealer2)
+            dealer1.persistDraftCDMContractOnLedger(cdmContract3)
+            dealer1.compressCDMContractsOnLedger(CompressionRequest(
+                    listOf(
+                            ContractIdAndContractIdScheme("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/"),
+                            ContractIdAndContractIdScheme("1234TradeId_5","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+                    )))
+
+            val allContracts = dealer1.getAllContracts()
+            assertEquals(1, allContracts.filter { it.contractStatus == ContractStatus.NOVATED }.size)
+            assertEquals(2, allContracts.filter { it.contractStatus == ContractStatus.LIVE }.size)
+            assertEquals(1, allContracts.filter { it.contractStatus == ContractStatus.DRAFT }.size)
+            assertEquals(2, allContracts.filter { it.contractStatus == ContractStatus.TERMINATED }.size)
         }
     }
 

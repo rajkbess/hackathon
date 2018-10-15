@@ -137,7 +137,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
-        name "O=CLIENT-C01,L=London,C=GB"
+        name "O=DEALER-D01,L=London,C=GB"
         p2pPort 10020
         rpcSettings {
             address("localhost:10021")
@@ -151,7 +151,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
-        name "O=CLIENT-C02,L=London,C=GB"
+        name "O=DEALER-D02,L=London,C=GB"
         p2pPort 10030
         rpcSettings {
             address("localhost:10031")
@@ -165,83 +165,13 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
-        name "O=CLIENT-C03,L=London,C=GB"
+        name "O=REGULATOR-R01,L=London,C=GB"
         p2pPort 10040
         rpcSettings {
             address("localhost:10041")
             adminAddress("localhost:10042")
         }
         webPort 10043
-        cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-        ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
-    }
-    node {
-        name "O=CLIENT-C04,L=London,C=GB"
-        p2pPort 10050
-        rpcSettings {
-            address("localhost:10051")
-            adminAddress("localhost:10052")
-        }
-        webPort 10053
-        cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-        ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
-    }
-    node {
-        name "O=CLIENT-C05,L=London,C=GB"
-        p2pPort 10060
-        rpcSettings {
-            address("localhost:10061")
-            adminAddress("localhost:10062")
-        }
-        webPort 10063
-        cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-        ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
-    }
-    node {
-        name "O=DEALER-D01,L=New York,C=US"
-        p2pPort 10070
-        rpcSettings {
-            address("localhost:10071")
-            adminAddress("localhost:10072")
-        }
-        webPort 10073
-        cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-        ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
-    }
-    node {
-        name "O=DEALER-D02,L=New York,C=US"
-        p2pPort 10080
-        rpcSettings {
-            address("localhost:10081")
-            adminAddress("localhost:10082")
-        }
-        webPort 10083
-        cordapps = [
-                "$project.group:cordapp-contracts-states:$project.version",
-                "$project.group:cordapp:$project.version",
-        ]
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
-    }
-    node {
-        name "O=DEALER-D03,L=New York,C=US"
-        p2pPort 10090
-        rpcSettings {
-            address("localhost:10091")
-            adminAddress("localhost:10092")
-        }
-        webPort 10093
         cordapps = [
                 "$project.group:cordapp-contracts-states:$project.version",
                 "$project.group:cordapp:$project.version",

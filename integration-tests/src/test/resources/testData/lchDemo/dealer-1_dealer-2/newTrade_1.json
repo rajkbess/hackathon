@@ -29,13 +29,6 @@
   "primitive" : {
     "newTrade" : [ {
       "contract" : {
-        "account" : [ {
-          "accountNumber" : "D01588595052",
-          "servicingParty" : "709100D01PQ7HQVZDA69"
-        }, {
-          "accountNumber" : "C01728346828",
-          "servicingParty" : "521700C015DIKTCI1V98"
-        } ],
         "contractIdentifier" : [ {
           "identifierValue" : {
             "identifier" : "7IE1XJPRMD",

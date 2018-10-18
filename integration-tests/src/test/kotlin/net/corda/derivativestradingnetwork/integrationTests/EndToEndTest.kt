@@ -9,6 +9,8 @@ import net.corda.derivativestradingnetwork.entity.ContractStatus
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.*
+import org.isda.cdm.Contract
+import org.isda.cdm.StateEnum
 import org.junit.Test
 import java.lang.RuntimeException
 import kotlin.test.assertEquals
@@ -128,13 +130,13 @@ class EndToEndTest {
             assertNumbersOfContracts(ccp, 0, 2, 0)
 
             //look closer at the trades
-            confirmTradeIdentity("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts().first() as Map<String,Any>)
-            confirmTradeIdentity("1234TradeId_1_A","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getLiveContracts().first() as Map<String,Any>)
-            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getNovatedContracts().first() as Map<String,Any>)
-            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getNovatedContracts().first() as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts().first())
+            confirmTradeIdentity("1234TradeId_1_A","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getLiveContracts().first())
+            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getNovatedContracts().first())
+            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getNovatedContracts().first())
 
-            confirmTradeIdentity("1234TradeId_1_A","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",ccp.getLiveContracts()[0] as Map<String,Any>)
-            confirmTradeIdentity("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",ccp.getLiveContracts()[1] as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_1_A","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",ccp.getLiveContracts()[0])
+            confirmTradeIdentity("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",ccp.getLiveContracts()[1])
         }
     }
 
@@ -149,8 +151,8 @@ class EndToEndTest {
             assertNumbersOfContracts(listOf(dealer1,dealer2),0,1)
             dealer1.clearCDMContract("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/","exceeds limit")
             assertNumbersOfContracts(listOf(dealer1,dealer2),0, 1, 0)
-            confirmTradeIdentity("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts().first() as Map<String,Any>)
-            confirmTradeIdentity("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getLiveContracts().first() as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer1.getLiveContracts().first())
+            confirmTradeIdentity("1234TradeId_4","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",dealer2.getLiveContracts().first())
             assertNumbersOfContracts(ccp, 0, 0, 0)
         }
     }
@@ -165,14 +167,14 @@ class EndToEndTest {
             assertNumbersOfContracts(regulator, 0, 0)
             dealer2.approveDraftCDMContractOnLedger("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
             assertNumbersOfContracts(regulator, 0, 1)
-            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",regulator.getLiveContracts().first() as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",regulator.getLiveContracts().first())
 
             //get it cleared
             dealer2.clearCDMContract("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
             assertNumbersOfContracts(regulator, 0, 2, 1) //they have the novated too because they get the whole transaction
-            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",regulator.getNovatedContracts().first() as Map<String,Any>)
-            confirmTradeIdentity("1234TradeId_1_A","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",regulator.getLiveContracts()[0] as Map<String,Any>)
-            confirmTradeIdentity("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",regulator.getLiveContracts()[1] as Map<String,Any>)
+            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",regulator.getNovatedContracts().first())
+            confirmTradeIdentity("1234TradeId_1_A","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",regulator.getLiveContracts()[0])
+            confirmTradeIdentity("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",regulator.getLiveContracts()[1])
         }
     }
 
@@ -206,8 +208,8 @@ class EndToEndTest {
             assertNumbersOfContracts(regulator, 0, 6, 4, 3)
 
             //dealer 1 has two live trades, one the one not touched by compression and the other one the compressed one
-            val unaffectedTrade = dealer1.getLiveContracts()[0] as Map<String,Any>
-            val compressedTrade = dealer1.getLiveContracts()[1] as Map<String,Any>
+            val unaffectedTrade = dealer1.getLiveContracts()[0]
+            val compressedTrade = dealer1.getLiveContracts()[1]
             confirmTradeIdentity("1234TradeId_5_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",unaffectedTrade)
             confirmTradeIdentity("CMP-","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",compressedTrade, true)
             confirmTradeNotional(compressedTrade,604750000)
@@ -239,8 +241,8 @@ class EndToEndTest {
             assertNumbersOfContracts(listOf(dealer1, dealer2, regulator),0,2, 0, 3)
 
             //dealer 1 has two live trades, one the one not touched by compression and the other one the compressed one
-            val unaffectedTrade = dealer1.getLiveContracts()[0] as Map<String,Any>
-            val compressedTrade = dealer1.getLiveContracts()[1] as Map<String,Any>
+            val unaffectedTrade = dealer1.getLiveContracts()[0]
+            val compressedTrade = dealer1.getLiveContracts()[1]
             confirmTradeIdentity("1234TradeId_5","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",unaffectedTrade)
             confirmTradeIdentity("CMP-","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",compressedTrade,true)
             confirmTradeNotional(compressedTrade,604750000)
@@ -273,26 +275,69 @@ class EndToEndTest {
         }
     }
 
-    private fun confirmTradeNotional(trade : Map<String,Any>, expectedNotional : Long) {
-        val interestRatePayouts = getValueForKey(getValueForKey(getValueForKey(getValueForKey(trade,"contractualProduct"),"economicTerms"),"payout"),"interestRatePayout") as List<Map<String,Any>>
-        interestRatePayouts.forEach {
-            val notional = getValueForKey(getValueForKey(getValueForKey(getValueForKey(it,"quantity")  ,"notionalSchedule") ,"notionalStepSchedule"),"initialValue") as Double
-            assertEquals(expectedNotional,notional.toLong())
+    @Test
+    fun `Contract parents can be pulled`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, ccp, _, regulator ->
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+
+            //make a bilateral trade
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract1, dealer1, dealer2)
+
+            //check parents of this bilateral live trade
+            val parents1 = dealer1.getContractParents("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",null)
+            assertEquals(0, parents1.size)
+
+            //clear the trade
+            dealer1.clearCDMContract("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            //check parents of the novated version of the trade
+            val parents2 = dealer1.getContractParents("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/", StateEnum.NOVATED)
+            assertEquals(1, parents2.size)
+            //check the parents of the live version of the trade
+            val parents3 = dealer1.getContractParents("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/", null)
+            assertEquals(0, parents3.size)
+            //check the parents of the new trade with the ccp
+            val parentsOfCleared = dealer1.getContractParents("1234TradeId_1_B","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/", null)
+            assertEquals(1, parentsOfCleared.size)
+
+            //put another trade in and compress with 1
+            val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_2.json").readText()
+            insertTradeBilaterallyAndClearAndConfirmAssertions(cdmContract2, dealer1, dealer2, ccp)
+            dealer1.compressCDMContractsOnLedger(CompressionRequest(
+                    listOf(
+                            ContractIdAndContractIdScheme("1234TradeId_1_B"),
+                            ContractIdAndContractIdScheme("1234TradeId_2_B")
+                    )))
+
+            val compressedContractIdentifier = dealer1.getLiveContracts().single().contractIdentifier.first().identifierValue.identifier
+            val parentsOfCompressed = dealer1.getContractParents(compressedContractIdentifier,"http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/", null)
+            assertEquals(2, parentsOfCompressed.size)
+
+            val parentsOfClearedInTerminatedState = dealer1.getContractParents("1234TradeId_1_B", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/", StateEnum.TERMINATED)
+            assertEquals(2, parentsOfClearedInTerminatedState.size)
+
+            val parentsOfClearedInLiveState = dealer1.getContractParents("1234TradeId_1_B", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/", null)
+            assertEquals(1, parentsOfClearedInLiveState.size)
+            confirmTradeIdentity("1234TradeId_1","http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/",parentsOfClearedInLiveState.single())
         }
     }
 
-    private fun getValueForKey(map : Any, key : String) : Any {
-        return (map as Map<String,Any>).get(key)!!
+    private fun confirmTradeNotional(contract : Contract, expectedNotional : Long) {
+        contract.contractualProduct.economicTerms.payout.interestRatePayout.forEach {
+            assertEquals(it.quantity.notionalSchedule.notionalStepSchedule.initialValue.toLong(), expectedNotional)
+        }
     }
 
-    private fun confirmTradeIdentity(contractId : String, contractIdScheme : String, trade : Map<String,Any>, contractIdPrefixOnly : Boolean = false) {
+
+    private fun confirmTradeIdentity(contractId : String, contractIdScheme : String, contract : Contract, contractIdPrefixOnly : Boolean = false) {
+        val actualContractId = contract.contractIdentifier.first().identifierValue.identifier
+        val actualContractIdScheme = contract.contractIdentifier.first().identifierValue.identifierScheme
         if(contractIdPrefixOnly) {
-            assertTrue((((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifier").toString().startsWith(contractId))
+            assertTrue(actualContractId.startsWith(contractId))
         } else {
-            assertEquals(contractId, (((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifier").toString())
+            assertEquals(actualContractId, contractId)
         }
 
-        assertEquals(contractIdScheme, (((trade.get("contractIdentifier") as List<Map<String,Any>>).first().get("identifierValue")) as Map<String,Object>).get("identifierScheme").toString())
+        assertEquals(actualContractIdScheme, contractIdScheme)
     }
 
     private fun insertTradeBilaterallyAndClearAndConfirmAssertions(cdmContractJson : String, party1 : MemberNode, party2 : MemberNode, ccp : MemberNode) {

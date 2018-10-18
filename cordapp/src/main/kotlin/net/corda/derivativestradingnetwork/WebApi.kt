@@ -182,7 +182,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun cDMResets(@QueryParam("contractId") contractId: String, @QueryParam("contractIdScheme") contractIdScheme: String,@QueryParam("issuer") issuer: String?,@QueryParam("partyReference") partyReference: String?) : Response {
-        return createResponseToTargetedQuery(VaultTargetedQueryType.RESETS,contractId,contractIdScheme,issuer,partyReference)
+        return createResponseToTargetedQuery(VaultTargetedQueryType.RESETS,contractId,contractIdScheme,issuer,partyReference, null)
     }
 
     @GET
@@ -190,7 +190,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
     @Produces(MediaType.APPLICATION_JSON)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
     fun cDMPayments(@QueryParam("contractId") contractId: String, @QueryParam("contractIdScheme") contractIdScheme: String,@QueryParam("issuer") issuer: String?,@QueryParam("partyReference") partyReference: String?) : Response {
-        return createResponseToTargetedQuery(VaultTargetedQueryType.PAYMENTS,contractId,contractIdScheme,issuer,partyReference)
+        return createResponseToTargetedQuery(VaultTargetedQueryType.PAYMENTS,contractId,contractIdScheme,issuer,partyReference, null)
     }
 
     @GET
@@ -202,32 +202,17 @@ class WebApi(val rpcOps: CordaRPCOps) {
     }
 
     @GET
-    @Path("cdmContractsAudit")
+    @Path("CDMContractParents")
     @Produces(MediaType.TEXT_PLAIN)
     @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
-    fun cdmContractsAudit() : Response {
-        return createResponseToContractsAuditQuery<CDMContractState>()
+    fun cdmContractAudit(@QueryParam("contractId") contractId: String, @QueryParam("contractIdScheme") contractIdScheme: String,@QueryParam("issuer") issuer: String?,@QueryParam("partyReference") partyReference: String?,@QueryParam("contractState") contractState: String?) : Response {
+        return createResponseToTargetedQuery(VaultTargetedQueryType.CONTRACT_PARENTS,contractId,contractIdScheme,null,null, contractState)
     }
 
-    @GET
-    @Path("cdmResetsAudit")
-    @Produces(MediaType.TEXT_PLAIN)
-    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
-    fun cdmResetsAudit() : Response {
-        return createResponseToContractsAuditQuery<ResetState>()
-    }
 
-    @GET
-    @Path("cdmPaymentsAudit")
-    @Produces(MediaType.TEXT_PLAIN)
-    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
-    fun cdmPaymentsAudit() : Response {
-        return createResponseToContractsAuditQuery<PaymentState>()
-    }
-
-    private fun createResponseToTargetedQuery(vaultTargetedQueryType: VaultTargetedQueryType, contractId: String, contractIdScheme: String, issuer: String?, partyReference: String?) : Response {
+    private fun createResponseToTargetedQuery(vaultTargetedQueryType: VaultTargetedQueryType, contractId: String, contractIdScheme: String, issuer: String?, partyReference: String?, contractState: String?) : Response {
         return try {
-            val flowHandle = rpcOps.startTrackedFlow(::VaultTargetedQueryFlow, vaultTargetedQueryType, contractId, contractIdScheme, issuer, partyReference)
+            val flowHandle = rpcOps.startTrackedFlow(::VaultTargetedQueryFlow, vaultTargetedQueryType, contractId, contractIdScheme, issuer, partyReference, contractState)
             val result = flowHandle.returnValue.getOrThrow()
             Response.status(Response.Status.OK).entity(result).build()
         } catch (ex: Throwable) {
@@ -247,13 +232,6 @@ class WebApi(val rpcOps: CordaRPCOps) {
         }
     }
 
-
-    private inline fun <reified T : ContractState> createResponseToContractsAuditQuery() : Response {
-        val allStatesCriteria = QueryCriteria.VaultQueryCriteria(status = Vault.StateStatus.ALL)
-        val stateAndRefs = rpcOps.vaultQueryBy<T>(allStatesCriteria).states
-        val states = stateAndRefs.map { it.state.data }
-        return Response.status(Response.Status.OK).entity(states.toString()).build()
-    }
 
     //######## Membership related REST endpoints #############
     @POST

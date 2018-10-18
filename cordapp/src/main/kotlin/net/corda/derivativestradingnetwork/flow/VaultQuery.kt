@@ -14,7 +14,7 @@ import net.corda.derivativestradingnetwork.states.DraftCDMContractState
 import org.isda.cdm.Contract
 import java.lang.reflect.Type
 import com.google.gson.JsonElement
-
+import org.isda.cdm.StateEnum
 
 
 @CordaSerializable
@@ -30,7 +30,8 @@ enum class VaultQueryType {
 @CordaSerializable
 enum class VaultTargetedQueryType {
     RESETS,
-    PAYMENTS
+    PAYMENTS,
+    CONTRACT_PARENTS
 }
 
 @StartableByRPC
@@ -97,15 +98,17 @@ class VaultQueryFlow(val vaultQueryType : VaultQueryType) : FlowLogic<String>() 
 }
 
 @StartableByRPC
-class VaultTargetedQueryFlow(val vaultTargetedQueryType : VaultTargetedQueryType,val contractId : String,val contractIdScheme : String,val issuer : String? = null,val partyReference : String? = null) : FlowLogic<String>() {
+class VaultTargetedQueryFlow(val vaultTargetedQueryType : VaultTargetedQueryType,val contractId : String,val contractIdScheme : String,val issuer : String? = null,val partyReference : String? = null, val contractStateString : String? = null) : FlowLogic<String>() {
 
     @Suspendable
     override fun call(): String {
+        val contractState = if (contractStateString == null) { null } else { StateEnum.valueOf(contractStateString) }
         val cdmVaultQuery = DefaultCdmVaultQuery(serviceHub)
         val contractIdentifier = createContractIdentifier(contractId, contractIdScheme, issuer, partyReference)
         return when (vaultTargetedQueryType) {
             VaultTargetedQueryType.RESETS -> serializeCdmObjectIntoJson(cdmVaultQuery.getResets(contractIdentifier))
             VaultTargetedQueryType.PAYMENTS -> serializeCdmObjectIntoJson(cdmVaultQuery.getPayments(contractIdentifier))
+            VaultTargetedQueryType.CONTRACT_PARENTS -> serializeCdmObjectIntoJson(cdmVaultQuery.getContractParents(contractIdentifier,contractState))
         }
     }
 

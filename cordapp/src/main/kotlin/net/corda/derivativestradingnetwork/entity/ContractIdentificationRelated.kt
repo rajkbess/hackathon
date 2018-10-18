@@ -11,7 +11,7 @@ enum class ContractStatus {
 }
 
 @CordaSerializable
-data class ContractIdAndContractIdScheme(val contractId : String, val contractIdScheme : String)
+data class ContractIdAndContractIdScheme(val contractId : String, val contractIdScheme : String = "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
 
 @CordaSerializable
 data class CDMContractAndState(val cdmContract : Contract, val contractStatus : ContractStatus)

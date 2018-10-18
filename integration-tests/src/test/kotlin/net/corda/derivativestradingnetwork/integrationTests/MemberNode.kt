@@ -6,6 +6,8 @@ import net.corda.derivativestradingnetwork.entity.*
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
 import okhttp3.Request
+import org.isda.cdm.Contract
+import org.isda.cdm.StateEnum
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -68,6 +70,19 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
     }
 
     //vault query related
+    fun getContractParents(contractId : String,contractIdScheme : String, contractState : StateEnum?,issuer : String? = null,partyReference : String? = null) : List<Contract> {
+        val nodeAddress = webHandle.listenAddress
+        val url = "http://$nodeAddress/api/memberApi/CDMContractParents"
+        val response = getFromUrlWithAQueryParameter(url, mapOf("contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference, "contractState" to contractState?.toString()).filter { it.value != null } as Map<String,String>)
+
+        assertTrue(response.isSuccessful)
+        assertEquals("OK", response.message())
+
+        val responseInJson = response.body().string()
+        val desiredType = object : TypeToken<List<Contract>>() {}.type
+        return getSuitableGson().fromJson(responseInJson,desiredType)
+    }
+
     fun getAllContracts() : List<CDMContractAndState> {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/allCDMContracts"
@@ -82,19 +97,19 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         return getSuitableGson().fromJson(responseInJson,desiredType)
     }
 
-    fun getLiveContracts() : List<*> {
+    fun getLiveContracts() : List<Contract> {
         return getCdmObjects("liveCDMContracts")
     }
 
-    fun getDraftContracts() : List<*> {
+    fun getDraftContracts() : List<Contract> {
         return getCdmObjects("draftCDMContracts")
     }
 
-    fun getTerminatedContracts() : List<*> {
+    fun getTerminatedContracts() : List<Contract> {
         return getCdmObjects("terminatedCDMContracts")
     }
 
-    fun getNovatedContracts() : List<*> {
+    fun getNovatedContracts() : List<Contract> {
         return getCdmObjects("novatedCDMContracts")
     }
 
@@ -129,7 +144,7 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         return getSuitableGson().fromJson(responseInJson,List::class.java)
     }
 
-    fun getCdmObjects(qualifier : String) : List<*> {
+    fun getCdmObjects(qualifier : String) : List<Contract> {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/$qualifier"
         val request = Request.Builder().url(url).build()
@@ -139,7 +154,8 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         assertEquals("OK", response.message())
 
         val responseInJson = response.body().string()
-        return getSuitableGson().fromJson(responseInJson,List::class.java)
+        val desiredType = object : TypeToken<List<Contract>>() {}.type
+        return getSuitableGson().fromJson(responseInJson,desiredType)
     }
 
     //membership related

@@ -397,13 +397,31 @@ class EndToEndTest {
         }
     }
 
+    @Test
+    fun `Contract only resets when applicable`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, _, _, regulator ->
+
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_6.json").readText()
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract1, dealer1, dealer2)
+
+            //fix on a date not on the contract
+            val fixingDate = LocalDate.parse("2018-09-27")
+
+            dealer1.fixCDMContractsOnLedger(fixingDate)
+
+            val resetsOnDealer1 = dealer1.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(0, resetsOnDealer1.size)
+
+            val resetsOnDealer2 = dealer2.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(0, resetsOnDealer2.size)
+        }
+    }
+
     private fun confirmReset(resetPrimitive : ResetPrimitive, fixingDate : LocalDate, fixingRate : BigDecimal) {
         assertEquals(fixingDate, resetPrimitive.date)
         assertEquals(fixingRate, resetPrimitive.resetValue)
         assertTrue(resetPrimitive.cashflow.cashflowAmount != null)
     }
-
-    //fixed float and only doing those that apply
 
     private fun confirmTradeNotional(contract : Contract, expectedNotional : Long) {
         contract.contractualProduct.economicTerms.payout.interestRatePayout.forEach {

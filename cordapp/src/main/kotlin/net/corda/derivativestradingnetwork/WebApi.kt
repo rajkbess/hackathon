@@ -27,6 +27,7 @@ import net.corda.derivativestradingnetwork.entity.ShareRequest
 import net.corda.derivativestradingnetwork.flow.*
 import net.corda.webserver.services.WebServerPluginRegistry
 import org.slf4j.Logger
+import java.time.LocalDate
 import java.util.function.Function
 import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
@@ -43,6 +44,22 @@ class WebApi(val rpcOps: CordaRPCOps) {
     }
 
     //######## CDM Events related REST endpoints ##########
+    @POST
+    @Path("fixCDMContracts")
+    @Produces(MediaType.APPLICATION_JSON)
+    fun fixCDMContracts(fixingDate: String): Response {
+        return try {
+            val networkMap = createNetworkMap()
+            val oracle = getPartiesOnThisBusinessNetwork("oracle").single().party
+            val flowHandle = rpcOps.startTrackedFlow(::FixCDMContractsOnLedgerFlow, networkMap, oracle, LocalDate.parse(fixingDate))
+            val result = flowHandle.returnValue.getOrThrow()
+            Response.status(Response.Status.OK).entity("${result} contract(s) have been fixed").build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
     @POST
     @Path("persistDraftCDMContract")
     @Produces(MediaType.APPLICATION_JSON)
@@ -310,6 +327,20 @@ class WebApi(val rpcOps: CordaRPCOps) {
     fun getCcps() : Response {
         return try {
             val clients = getPartyNamesOnThisBusinessNetwork("ccp")
+            Response.status(Response.Status.OK).entity(clients).build()
+        } catch (ex: Throwable) {
+            logger.error(ex.message, ex)
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()
+        }
+    }
+
+    @GET
+    @Path("oracles")
+    @Produces(MediaType.APPLICATION_JSON)
+    @JacksonFeatures(serializationEnable = arrayOf(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS))
+    fun getOracles() : Response {
+        return try {
+            val clients = getPartyNamesOnThisBusinessNetwork("oracle")
             Response.status(Response.Status.OK).entity(clients).build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)

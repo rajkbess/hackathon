@@ -8,6 +8,7 @@ import net.corda.testing.driver.DriverDSL
 import okhttp3.Request
 import org.isda.cdm.Contract
 import org.isda.cdm.StateEnum
+import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -15,6 +16,12 @@ import kotlin.test.assertTrue
 class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Boolean) : BusinessNetworkNode(driver, testIdentity, autoStart) {
 
     //cdm events and contracts related
+    fun fixCDMContractsOnLedger(fixingDate : LocalDate) {
+        val response = postPlainTextToUrl(fixingDate.toString(), "http://${webHandle.listenAddress}/api/memberApi/fixCDMContracts")
+        assertEquals("OK", response.message())
+        assertTrue(response.isSuccessful)
+    }
+
     fun persistDraftCDMContractOnLedger(cdmContractJson : String) {
         val response = postJsonToUrl(cdmContractJson, "http://${webHandle.listenAddress}/api/memberApi/persistDraftCDMContract")
         assertEquals("OK", response.message())

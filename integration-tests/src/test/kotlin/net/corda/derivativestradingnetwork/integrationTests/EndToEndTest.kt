@@ -13,6 +13,7 @@ import org.isda.cdm.Contract
 import org.isda.cdm.StateEnum
 import org.junit.Test
 import java.lang.RuntimeException
+import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -40,8 +41,9 @@ class EndToEndTest {
             val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
             val matchingService = MemberNode(this, TestIdentity(CordaX500Name("MATCHING-SERVICE-M01", "", "US")), false)
             val regulator = MemberNode(this, TestIdentity(CordaX500Name("REGULATOR-R01", "", "US")), false)
+            val oracle = MemberNode(this, TestIdentity(CordaX500Name("ORACLE-O01", "", "US")), false)
 
-            listOf(bno,dealer1,dealer2, matchingService, ccp, regulator).map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }
+            listOf(bno,dealer1,dealer2, matchingService, ccp, regulator, oracle).map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }
 
             //confirm all the nodes are on the network
             bno.confirmNodeIsOnTheNetwork()
@@ -50,8 +52,9 @@ class EndToEndTest {
             ccp.confirmNodeIsOnTheNetwork()
             matchingService.confirmNodeIsOnTheNetwork()
             regulator.confirmNodeIsOnTheNetwork()
+            oracle.confirmNodeIsOnTheNetwork()
 
-            establishBusinessNetworkAndConfirmAssertions(bno, listOf(dealer1,dealer2,ccp,matchingService,regulator))
+            establishBusinessNetworkAndConfirmAssertions(bno, listOf(dealer1,dealer2,ccp,matchingService,regulator,oracle))
 
             //run the test
             test(this, bno,  dealer1, dealer2, ccp, matchingService, regulator)
@@ -321,6 +324,23 @@ class EndToEndTest {
         }
     }
 
+    @Test
+    fun `Contracts can be fixed`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, ccp, _, regulator ->
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
+            val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_2.json").readText()
+            val cdmContract3 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_3.json").readText()
+            val cdmContract5 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_5.json").readText()
+
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract1, dealer1, dealer2)
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract2, dealer1, dealer2)
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract3, dealer1, dealer2)
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract5, dealer1, dealer2)
+
+            dealer1.fixCDMContractsOnLedger(LocalDate.parse("2018-10-19"))
+        }
+    }
+
     private fun confirmTradeNotional(contract : Contract, expectedNotional : Long) {
         contract.contractualProduct.economicTerms.payout.interestRatePayout.forEach {
             assertEquals(it.quantity.notionalSchedule.notionalStepSchedule.initialValue.toLong(), expectedNotional)
@@ -390,13 +410,14 @@ class EndToEndTest {
                 it.testIdentity.name.organisation.contains("regulator",true) -> "regulator"
                 it.testIdentity.name.organisation.contains("matching-service",true) -> "matching service"
                 it.testIdentity.name.organisation.contains("regulator",true) -> "regulator"
+                it.testIdentity.name.organisation.contains("oracle",true) -> "oracle"
                 else -> throw RuntimeException("Role not recognized from organisation name")
             }
             acquireMembershipAndConfirmAssertions(bno,it,MembershipMetadata(role, it.testIdentity.name.organisation,it.testIdentity.name.organisation.hashCode().toString(),"Somewhere beyond the rainbow","Main Branch",it.testIdentity.name.organisation))
         }
 
         //check members can see one another
-        membersToBe.forEach { confirmVisibility(it as MemberNode, 5, 0, 2, 1, 1) }
+        membersToBe.forEach { confirmVisibility(it as MemberNode, 6, 0, 2, 1, 1, 1) }
     }
 
     private fun acquireMembershipAndConfirmAssertions(bno : BnoNode, member : MemberNode, membershipMetadata : MembershipMetadata) {
@@ -406,12 +427,13 @@ class EndToEndTest {
         assertEquals(membershipsBefore+1,bno.getMembershipStates().size)
     }
 
-    private fun confirmVisibility(memberNode : MemberNode, allMembers : Int, clients : Int, dealers : Int, ccps : Int, regulators : Int) {
+    private fun confirmVisibility(memberNode : MemberNode, allMembers : Int, clients : Int, dealers : Int, ccps : Int, regulators : Int, oracles : Int) {
         assertEquals(allMembers,memberNode.getMembersVisibleToNode().size)
         assertEquals(clients,memberNode.getMembersVisibleToNode("clients").size)
         assertEquals(dealers,memberNode.getMembersVisibleToNode("dealers").size)
         assertEquals(ccps,memberNode.getMembersVisibleToNode("ccps").size)
         assertEquals(regulators,memberNode.getMembersVisibleToNode("regulators").size)
+        assertEquals(oracles,memberNode.getMembersVisibleToNode("oracles").size)
     }
 
     private fun assertNumbersOfContracts(memberNodes : List<MemberNode>, draft : Int, live : Int = 0, novated : Int = 0, terminated : Int = 0) {

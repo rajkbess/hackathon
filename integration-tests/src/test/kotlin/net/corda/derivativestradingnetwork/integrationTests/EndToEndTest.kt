@@ -347,7 +347,7 @@ class EndToEndTest {
             confirmReset(resetsOnDealer1[0], fixingDate, BigDecimal("1.12345"))
             confirmReset(resetsOnDealer1[1], fixingDate, BigDecimal("1.12345"))
 
-            //fix on month later
+            //fix 30 days later
             val fixingDateOneMonthLater = LocalDate.parse("2018-11-18")
 
             dealer2.fixCDMContractsOnLedger(fixingDateOneMonthLater)
@@ -359,6 +359,41 @@ class EndToEndTest {
             assertEquals(3, resetsOnDealer2.size)
 
             confirmReset(resetsOnDealer1[2], fixingDateOneMonthLater, BigDecimal("1.12345"))
+        }
+    }
+
+    @Test
+    fun `Fixed-Floating contract can be fixed`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, _, _, regulator ->
+
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_6.json").readText()
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract1, dealer1, dealer2)
+
+            //fix on effective date
+            val fixingDate = LocalDate.parse("2018-09-26")
+
+            dealer1.fixCDMContractsOnLedger(fixingDate)
+
+            var resetsOnDealer1 = dealer1.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, resetsOnDealer1.size)
+
+            var resetsOnDealer2 = dealer2.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, resetsOnDealer2.size)
+
+            confirmReset(resetsOnDealer1[0], fixingDate, BigDecimal("1.12345"))
+
+            //fix 6*30 days later
+            val fixingDateSixMonthsLater = LocalDate.parse("2019-03-25")
+
+            dealer2.fixCDMContractsOnLedger(fixingDateSixMonthsLater)
+
+            resetsOnDealer1 = dealer1.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(2, resetsOnDealer1.size)
+
+            resetsOnDealer2 = dealer2.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(2, resetsOnDealer2.size)
+
+            confirmReset(resetsOnDealer1[1], fixingDateSixMonthsLater, BigDecimal("1.12345"))
         }
     }
 

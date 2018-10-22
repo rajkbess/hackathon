@@ -38,14 +38,15 @@ class NodeDriver {
             val dealer3 = MemberNode(this, TestIdentity(CordaX500Name("DEALER-D03", "", "US")), false)
             val ccp = MemberNode(this, TestIdentity(CordaX500Name("CCP-P01", "", "US")), false)
             val regulator = MemberNode(this, TestIdentity(CordaX500Name("REGULATOR-R01", "", "US")), false)
+            val oracle = MemberNode(this, TestIdentity(CordaX500Name("ORACLE-O01", "", "US")), false)
 
-            val nonBnoNodes = listOf(dealer1, dealer2, dealer3, ccp, regulator)
+            val nonBnoNodes = listOf(dealer1, dealer2, dealer3, ccp, regulator, oracle)
             val nodes = listOf(bno) + nonBnoNodes
 
             nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }.forEach { it.confirmNodeIsOnTheNetwork() }
             println("Establishing business network")
 
-            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes - dealer3, 0, 4, 0, 2, 1,0,1)
+            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes - dealer3, 0, 4, 0, 2, 1,0,1, 1)
 
             putSomeTradesOnTheNetwork(dealer1, dealer2, ccp)
 
@@ -91,7 +92,7 @@ class NodeDriver {
         println("Test trades uploaded")
     }
 
-    private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>, existingMembers : Int, expectedMembers : Int, expectedClients : Int, expectedDealers : Int, expectedCcps : Int, expectedMatchingServices : Int, expectedRegulators : Int) {
+    private fun establishBusinessNetworkAndConfirmAssertions(bno: BnoNode, membersToBe: List<MemberNode>, existingMembers : Int, expectedMembers : Int, expectedClients : Int, expectedDealers : Int, expectedCcps : Int, expectedMatchingServices : Int, expectedRegulators : Int, expectedOracles : Int) {
         //at the beginning there are no members
         assertEquals(existingMembers, bno.getMembershipStates().size)
 
@@ -102,6 +103,7 @@ class NodeDriver {
                 it.testIdentity.name.organisation.contains("ccp",true) -> "ccp"
                 it.testIdentity.name.organisation.contains("regulator",true) -> "regulator"
                 it.testIdentity.name.organisation.contains("matching-service",true) -> "matching service"
+                it.testIdentity.name.organisation.contains("oracle",true) -> "oracle"
                 else -> throw RuntimeException("Role not recognized from organisation name")
             }
             val membershipMetadata = MembershipMetadata(role, it.testIdentity.name.organisation,it.testIdentity.name.organisation.hashCode().toString(),"Somewhere beyond the rainbow","Main Branch",it.testIdentity.name.organisation)
@@ -109,7 +111,7 @@ class NodeDriver {
         }
 
         //check members can see one another
-        membersToBe.forEach { confirmVisibility(it, expectedMembers, expectedClients, expectedDealers, expectedCcps, expectedMatchingServices, expectedRegulators) }
+        membersToBe.forEach { confirmVisibility(it, expectedMembers, expectedClients, expectedDealers, expectedCcps, expectedMatchingServices, expectedRegulators, expectedOracles) }
     }
 
 
@@ -120,12 +122,13 @@ class NodeDriver {
         assertEquals(membershipsBefore + 1, bno.getMembershipStates().size)
     }
 
-    private fun confirmVisibility(memberNode: MemberNode, allMembers: Int, clients: Int, dealers: Int, ccps: Int, matchingServices : Int, regulators : Int) {
+    private fun confirmVisibility(memberNode: MemberNode, allMembers: Int, clients: Int, dealers: Int, ccps: Int, matchingServices : Int, regulators : Int, oracles : Int) {
         assertEquals(allMembers, memberNode.getMembersVisibleToNode().size)
         assertEquals(clients, memberNode.getMembersVisibleToNode("clients").size)
         assertEquals(dealers, memberNode.getMembersVisibleToNode("dealers").size)
         assertEquals(ccps, memberNode.getMembersVisibleToNode("ccps").size)
         assertEquals(matchingServices, memberNode.getMembersVisibleToNode("matchingServices").size)
         assertEquals(regulators, memberNode.getMembersVisibleToNode("regulators").size)
+        assertEquals(oracles, memberNode.getMembersVisibleToNode("oracles").size)
     }
 }

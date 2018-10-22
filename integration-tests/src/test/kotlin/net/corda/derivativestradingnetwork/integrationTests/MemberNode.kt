@@ -18,10 +18,14 @@ import kotlin.test.assertTrue
 class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Boolean) : BusinessNetworkNode(driver, testIdentity, autoStart) {
 
     //cdm events and contracts related
-    fun fixCDMContractsOnLedger(fixingDate : LocalDate) {
+    fun fixCDMContractsOnLedger(fixingDate : LocalDate) : List<ContractIdAndContractIdScheme> {
         val response = postPlainTextToUrl(fixingDate.toString(), "http://${webHandle.listenAddress}/api/memberApi/fixCDMContracts")
         assertEquals("OK", response.message())
         assertTrue(response.isSuccessful)
+
+        val responseInJson = response.body().string()
+        val desiredType = object : TypeToken<List<ContractIdAndContractIdScheme>>() {}.type
+        return getSuitableGson().fromJson(responseInJson,desiredType)
     }
 
     fun persistDraftCDMContractOnLedger(cdmContractJson : String) {

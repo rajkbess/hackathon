@@ -372,7 +372,8 @@ class EndToEndTest {
             //fix on effective date
             val fixingDate = LocalDate.parse("2018-09-26")
 
-            dealer1.fixCDMContractsOnLedger(fixingDate)
+            val fixedTrades = dealer1.fixCDMContractsOnLedger(fixingDate)
+            assertEquals(1, fixedTrades.size)
 
             var resetsOnDealer1 = dealer1.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
             assertEquals(1, resetsOnDealer1.size)
@@ -407,7 +408,8 @@ class EndToEndTest {
             //fix on a date not on the contract
             val fixingDate = LocalDate.parse("2018-09-27")
 
-            dealer1.fixCDMContractsOnLedger(fixingDate)
+            val fixedTrades = dealer1.fixCDMContractsOnLedger(fixingDate)
+            assertEquals(0, fixedTrades.size)
 
             val resetsOnDealer1 = dealer1.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
             assertEquals(0, resetsOnDealer1.size)

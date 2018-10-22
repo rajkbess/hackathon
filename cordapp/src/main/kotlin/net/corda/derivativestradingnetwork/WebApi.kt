@@ -6,18 +6,11 @@ import net.corda.businessnetworks.membership.common.PartyAndMembershipMetadata
 import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.RequestMembershipFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
-import net.corda.cdmsupport.CDMContractState
-import net.corda.cdmsupport.PaymentState
-import net.corda.cdmsupport.ResetState
 import net.corda.cdmsupport.network.NetworkMap
-import net.corda.core.contracts.ContractState
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.identity.Party
 import net.corda.core.messaging.CordaRPCOps
 import net.corda.core.messaging.startTrackedFlow
-import net.corda.core.messaging.vaultQueryBy
-import net.corda.core.node.services.Vault
-import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.getOrThrow
 import net.corda.core.utilities.loggerFor
 import net.corda.derivativestradingnetwork.entity.CompressionRequest
@@ -53,7 +46,7 @@ class WebApi(val rpcOps: CordaRPCOps) {
             val oracle = getPartiesOnThisBusinessNetwork("oracle").single().party
             val flowHandle = rpcOps.startTrackedFlow(::FixCDMContractsOnLedgerFlow, networkMap, oracle, LocalDate.parse(fixingDate))
             val result = flowHandle.returnValue.getOrThrow()
-            Response.status(Response.Status.OK).entity("${result} contract(s) have been fixed").build()
+            Response.status(Response.Status.OK).entity(result).build()
         } catch (ex: Throwable) {
             logger.error(ex.message, ex)
             Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(ex.message!!).build()

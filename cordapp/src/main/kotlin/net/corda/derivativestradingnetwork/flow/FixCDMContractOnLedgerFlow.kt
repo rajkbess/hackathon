@@ -15,6 +15,7 @@ import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.unwrap
+import net.corda.derivativestradingnetwork.entity.ContractIdAndContractIdScheme
 import org.isda.cdm.Contract
 import org.isda.cdm.InterestRatePayout
 import org.isda.cdm.PeriodExtendedEnum
@@ -23,10 +24,10 @@ import java.time.LocalDate
 import java.util.*
 
 @StartableByRPC
-class FixCDMContractsOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: Party, val fixingDate : LocalDate) : FlowLogic<Int>() {
+class FixCDMContractsOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: Party, val fixingDate : LocalDate) : FlowLogic<List<ContractIdAndContractIdScheme>>() {
 
     @Suspendable
-    override fun call() : Int {
+    override fun call() : List<ContractIdAndContractIdScheme> {
         val cdmVaultQuery = DefaultCdmVaultQuery(serviceHub)
         val liveContracts = cdmVaultQuery.getLiveContracts()
         val toBeFixedContracts = liveContracts.filter { hasFixingOnDate(it) }
@@ -35,7 +36,7 @@ class FixCDMContractsOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: 
             val contractIdScheme = it.contractIdentifier.single().identifierValue.identifierScheme
             subFlow(FixCDMContractOnLedgerFlow(networkMap, oracleParty, contractId, contractIdScheme, fixingDate))
         }
-        return toBeFixedContracts.size
+        return toBeFixedContracts.map { ContractIdAndContractIdScheme(it.contractIdentifier.first().identifierValue.identifier, it.contractIdentifier.first().identifierValue.identifierScheme) }
     }
 
     private fun hasFixingOnDate(contract : Contract) : Boolean {
@@ -110,7 +111,7 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
         return floatingLegsWithResetOnDay.map {
             val notionalAmount = it.quantity.notionalSchedule.notionalStepSchedule.initialValue
             val calculationPeriodFrequency = getCalculationPeriodFrequency(it)
-            val cashflow = notionalAmount.multiply(fixingRate).multiply(BigDecimal(calculationPeriodFrequency/365.0))
+            val cashflow = notionalAmount.multiply(fixingRate).multiply(BigDecimal(calculationPeriodFrequency/(365.0*100)))
             (it to cashflow)
         }.toMap()
     }

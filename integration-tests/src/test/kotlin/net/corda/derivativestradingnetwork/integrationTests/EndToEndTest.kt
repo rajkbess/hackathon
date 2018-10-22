@@ -338,14 +338,27 @@ class EndToEndTest {
 
             dealer1.fixCDMContractsOnLedger(fixingDate)
 
-            val resetsOnDealer1 = dealer1.getResets("1234TradeId_1", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            var resetsOnDealer1 = dealer1.getResets("1234TradeId_1", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
             assertEquals(2, resetsOnDealer1.size)
 
-            val resetsOnDealer2 = dealer2.getResets("1234TradeId_1", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            var resetsOnDealer2 = dealer2.getResets("1234TradeId_1", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
             assertEquals(2, resetsOnDealer2.size)
 
             confirmReset(resetsOnDealer1[0], fixingDate, BigDecimal("1.12345"))
             confirmReset(resetsOnDealer1[1], fixingDate, BigDecimal("1.12345"))
+
+            //fix on month later
+            val fixingDateOneMonthLater = LocalDate.parse("2018-11-18")
+
+            dealer2.fixCDMContractsOnLedger(fixingDateOneMonthLater)
+
+            resetsOnDealer1 = dealer1.getResets("1234TradeId_1", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(3, resetsOnDealer1.size)
+
+            resetsOnDealer2 = dealer2.getResets("1234TradeId_1", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(3, resetsOnDealer2.size)
+
+            confirmReset(resetsOnDealer1[2], fixingDateOneMonthLater, BigDecimal("1.12345"))
         }
     }
 

@@ -106,7 +106,8 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
 
     private fun calculateCashflow(fixingRate : BigDecimal, cdmContractState: CDMContractState) : Map<InterestRatePayout,BigDecimal> {
         val floatingLegs = cdmContractState.contract().contractualProduct.economicTerms.payout.interestRatePayout.filter { isFloating(it) }
-        return floatingLegs.map {
+        val floatingLegsWithResetOnDay = floatingLegs.filter { hasFixingOnDate(it) }
+        return floatingLegsWithResetOnDay.map {
             val notionalAmount = it.quantity.notionalSchedule.notionalStepSchedule.initialValue
             val calculationPeriodFrequency = getCalculationPeriodFrequency(it)
             val cashflow = notionalAmount.multiply(fixingRate).multiply(BigDecimal(calculationPeriodFrequency/365.0))
@@ -116,6 +117,23 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
 
     private fun isFloating(interestRatePayout : InterestRatePayout) : Boolean {
         return interestRatePayout.interestRate?.floatingRate != null
+    }
+
+    private fun hasFixingOnDate(interestRatePayout: InterestRatePayout) : Boolean {
+        return getFixingDates(interestRatePayout).contains(fixingDate)
+    }
+
+    private fun getFixingDates(interestRatePayout: InterestRatePayout) : List<LocalDate> {
+        //this is simplified and actually looks at the starts of the calculation periods
+        val ret = mutableListOf<LocalDate>()
+        val calculationPeriodFrequency = getCalculationPeriodFrequency(interestRatePayout)
+
+        var fixingDate = interestRatePayout.calculationPeriodDates.effectiveDate.adjustableDate.unadjustedDate
+        while(fixingDate.isBefore(interestRatePayout.calculationPeriodDates.terminationDate.unadjustedDate)) {
+            ret.add(fixingDate)
+            fixingDate = fixingDate.plusDays(calculationPeriodFrequency)
+        }
+        return ret
     }
 
     private fun getCalculationPeriodFrequency(interestRatePayout: InterestRatePayout) : Long {

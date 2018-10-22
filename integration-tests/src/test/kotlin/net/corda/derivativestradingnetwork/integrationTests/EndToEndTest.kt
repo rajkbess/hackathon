@@ -10,9 +10,11 @@ import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.*
 import org.isda.cdm.Contract
+import org.isda.cdm.ResetPrimitive
 import org.isda.cdm.StateEnum
 import org.junit.Test
 import java.lang.RuntimeException
+import java.math.BigDecimal
 import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -325,21 +327,35 @@ class EndToEndTest {
     }
 
     @Test
-    fun `Contracts can be fixed`() {
-        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, ccp, _, regulator ->
+    fun `Basis contract can be fixed`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, _, _, regulator ->
+
             val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_1.json").readText()
-            val cdmContract2 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_2.json").readText()
-            val cdmContract3 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_3.json").readText()
-            val cdmContract5 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_5.json").readText()
-
             insertTradeBilaterallyAndConfirmAssertions(cdmContract1, dealer1, dealer2)
-            insertTradeBilaterallyAndConfirmAssertions(cdmContract2, dealer1, dealer2)
-            insertTradeBilaterallyAndConfirmAssertions(cdmContract3, dealer1, dealer2)
-            insertTradeBilaterallyAndConfirmAssertions(cdmContract5, dealer1, dealer2)
 
-            dealer1.fixCDMContractsOnLedger(LocalDate.parse("2018-10-19"))
+            //fix on effective date
+            val fixingDate = LocalDate.parse("2018-10-19")
+
+            dealer1.fixCDMContractsOnLedger(fixingDate)
+
+            val resetsOnDealer1 = dealer1.getResets("1234TradeId_1", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(2, resetsOnDealer1.size)
+
+            val resetsOnDealer2 = dealer2.getResets("1234TradeId_1", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(2, resetsOnDealer2.size)
+
+            confirmReset(resetsOnDealer1[0], fixingDate, BigDecimal("1.12345"))
+            confirmReset(resetsOnDealer1[1], fixingDate, BigDecimal("1.12345"))
         }
     }
+
+    private fun confirmReset(resetPrimitive : ResetPrimitive, fixingDate : LocalDate, fixingRate : BigDecimal) {
+        assertEquals(fixingDate, resetPrimitive.date)
+        assertEquals(fixingRate, resetPrimitive.resetValue)
+        assertTrue(resetPrimitive.cashflow.cashflowAmount != null)
+    }
+
+    //fixed float and only doing those that apply
 
     private fun confirmTradeNotional(contract : Contract, expectedNotional : Long) {
         contract.contractualProduct.economicTerms.payout.interestRatePayout.forEach {

@@ -7,6 +7,8 @@ import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
 import okhttp3.Request
 import org.isda.cdm.Contract
+import org.isda.cdm.Payment
+import org.isda.cdm.ResetPrimitive
 import org.isda.cdm.StateEnum
 import java.time.LocalDate
 import kotlin.test.assertEquals
@@ -120,12 +122,16 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         return getCdmObjects("novatedCDMContracts")
     }
 
-    fun getResets(contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
-        return getContractEvents("CDMResets", contractId, contractIdScheme, issuer, partyReference)
+    fun getResets(contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<ResetPrimitive> {
+        val resetsInJson = getContractEvents("CDMResets", contractId, contractIdScheme, issuer, partyReference)
+        val desiredType = object : TypeToken<List<ResetPrimitive>>() {}.type
+        return getSuitableGson().fromJson(resetsInJson,desiredType)
     }
 
     fun getPayments(contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
-        return getContractEvents("CDMPayments", contractId, contractIdScheme, issuer, partyReference)
+        val paymentsInJson = getContractEvents("CDMPayments", contractId, contractIdScheme, issuer, partyReference)
+        val desiredType = object : TypeToken<List<Payment>>() {}.type
+        return getSuitableGson().fromJson(paymentsInJson,desiredType)
     }
 
     fun getAllPayments() : List<*> {
@@ -139,7 +145,7 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         }
     }
 
-    private fun getContractEvents(type : String, contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : List<*> {
+    private fun getContractEvents(type : String, contractId : String,contractIdScheme : String,issuer : String? = null,partyReference : String? = null) : String {
         val nodeAddress = webHandle.listenAddress
         val url = "http://$nodeAddress/api/memberApi/$type"
         val response = getFromUrlWithAQueryParameter(url, mapOf("contractId" to contractId, "contractIdScheme" to contractIdScheme, "issuer" to issuer, "partyReference" to partyReference).filter { it.value != null } as Map<String,String>)
@@ -147,8 +153,7 @@ class MemberNode(driver : DriverDSL, testIdentity : TestIdentity, autoStart : Bo
         assertTrue(response.isSuccessful)
         assertEquals("OK", response.message())
 
-        val responseInJson = response.body().string()
-        return getSuitableGson().fromJson(responseInJson,List::class.java)
+        return response.body().string()
     }
 
     fun getCdmObjects(qualifier : String) : List<Contract> {

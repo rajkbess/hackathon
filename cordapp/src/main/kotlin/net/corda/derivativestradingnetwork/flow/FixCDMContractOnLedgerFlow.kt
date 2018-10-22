@@ -88,7 +88,7 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
         val cdmContractState = DefaultCdmVaultQuery(serviceHub).getCdmContractState(listOf(contractIdentifier)).state.data
         val fixingRate = subFlow(GetFixingForDate(oracleParty, fixingDate))
         val cashFlow = calculateCashflow(fixingRate, cdmContractState)
-        val resetCdmEvent = createResetCDMEvent(cdmContractState, cashFlow)
+        val resetCdmEvent = createResetCDMEvent(cdmContractState, cashFlow, fixingRate)
         return persistCDMEventOnTheLedger(resetCdmEvent)
     }
 
@@ -107,7 +107,7 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
     private fun calculateCashflow(fixingRate : BigDecimal, cdmContractState: CDMContractState) : Map<InterestRatePayout,BigDecimal> {
         val floatingLegs = cdmContractState.contract().contractualProduct.economicTerms.payout.interestRatePayout.filter { isFloating(it) }
         return floatingLegs.map {
-            val notionalAmount = it.quantity.notionalAmount.amount
+            val notionalAmount = it.quantity.notionalSchedule.notionalStepSchedule.initialValue
             val calculationPeriodFrequency = getCalculationPeriodFrequency(it)
             val cashflow = notionalAmount.multiply(fixingRate).multiply(BigDecimal(calculationPeriodFrequency/365.0))
             (it to cashflow)
@@ -141,8 +141,39 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
         return subFlow(GetMembersFlow(false))
     }
 
+    private fun createCashflowSnippet(interestRatePayout : InterestRatePayout, cashflowAmount : BigDecimal, fixingRate : BigDecimal) : String {
+        val payerParty = interestRatePayout.payerReceiver.payerPartyReference
+        val receiverParty = interestRatePayout.payerReceiver.receiverPartyReference
+        val cashflowCurrency = interestRatePayout.quantity.notionalSchedule.notionalStepSchedule.currency
+
+        return """
+            {
+                  "cashflow" : {
+                    "payerReceiver" : {
+                      "payerPartyReference" : "#PARTY_PAYER_ID#",
+                      "receiverPartyReference" : "#PARTY_RECEIVER_ID#"
+                    },
+                    "cashflowAmount" : {
+                      "amount" : #AMOUNT#,
+                      "currency" : "#CURRENCY#"
+                    },
+                    "cashflowCalculation" : "FloatingAmount",
+                    "rosettaKeyValue" : "ba6df164"
+                  },
+                  "date" : "#FIXING_DATE#",
+                  "resetValue" : #FIXING_RATE#,
+                  "rosettaKey" : "2e884775"
+            }
+        """.replace("#PARTY_PAYER_ID#",payerParty)
+           .replace("#PARTY_RECEIVER_ID#",receiverParty)
+           .replace("#AMOUNT#",cashflowAmount.toString())
+           .replace("#CURRENCY#",cashflowCurrency)
+           .replace("#FIXING_DATE#",fixingDate.toString())
+           .replace("#FIXING_RATE#",fixingRate.toString())
+    }
+
     @Suspendable
-    private fun createResetCDMEvent(cdmContractState : CDMContractState, cashFlowPerLeg : Map<InterestRatePayout, BigDecimal>) : String {
+    private fun createResetCDMEvent(cdmContractState : CDMContractState, cashFlowPerLeg : Map<InterestRatePayout, BigDecimal>, fixingRate : BigDecimal) : String {
 
         val contract = cdmContractState.contract()
         val eventDate = LocalDate.now().toString()
@@ -151,10 +182,8 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
         val party2MembershipMetadata = getMembershipMetadata(cdmContractState.participants[1])
         val contractIdentifier = contract.contractIdentifier.single().identifierValue.identifier
         val contractIdentifierScheme = contract.contractIdentifier.single().identifierValue.identifierScheme
-        val floatingLeg = contract.contractualProduct.economicTerms.payout.interestRatePayout.filter { isFloating(it) }.single()
-        val floatingLegPayer = floatingLeg.payerReceiver.payerPartyReference
-        val floatingLegReceiver = floatingLeg.payerReceiver.receiverPartyReference
-        val cashFlowCurrency = floatingLeg.quantity.notionalAmount.currency
+        val cashFlowSnippets = cashFlowPerLeg.map { createCashflowSnippet(it.key, it.value, fixingRate) }
+        val combinedCashflowSnippet = cashFlowSnippets.fold("") { left, right -> "$left,$right"}.removePrefix(",")
 
         return """
             {
@@ -192,23 +221,7 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
                 "partyIdScheme" : "http://www.fpml.org/coding-scheme/external/iso17442"
               } ],
               "primitive" : {
-                "reset" : [ {
-                  "cashflow" : {
-                    "payerReceiver" : {
-                      "payerPartyReference" : "#PARTY_PAYER_ID#",
-                      "receiverPartyReference" : "#PARTY_RECEIVER_ID#"
-                    },
-                    "cashflowAmount" : {
-                      "amount" : #AMOUNT#,
-                      "currency" : "#CURRENCY#"
-                    },
-                    "cashflowCalculation" : "FloatingAmount",
-                    "rosettaKeyValue" : "ba6df164"
-                  },
-                  "date" : "#FIXING_DATE#",
-                  "resetValue" : #FIXING_RATE#,
-                  "rosettaKey" : "2e884775"
-                } ]
+                "reset" : [ #COMBINED_CASHFLOW_SNIPPET# ]
               },
               "timestamp" : {
                 "creationTimestamp" : "2018-03-20T18:13:51"
@@ -225,10 +238,8 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
            .replace("#PARTY_2_ID#",party2MembershipMetadata.partyId)
            .replace("#CONTRACT_IDENTIFIER#",contractIdentifier)
            .replace("#CONTRACT_IDENTIFIER_SCHEME#",contractIdentifierScheme)
-           .replace("#PARTY_PAYER_ID#",floatingLegPayer)
-           .replace("#PARTY_RECEIVER_ID#",floatingLegReceiver)
-           .replace("#AMOUNT#",cashFlow.toDouble().toString())
-           .replace("#CURRENCY#",cashFlowCurrency)
+           .replace("#COMBINED_CASHFLOW_SNIPPET#", combinedCashflowSnippet)
+
     }
 
 }
@@ -265,6 +276,6 @@ class GetFixingForDateResponder(flowSession : FlowSession) : BusinessNetworkAwar
     @Suspendable
     override fun onOtherPartyMembershipVerified() {
         val fixingDate = flowSession.receive<LocalDate>().unwrap { it }
-        flowSession.send(BigDecimal("1.984"))
+        flowSession.send(BigDecimal("1.12345"))
     }
 }

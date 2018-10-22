@@ -1,6 +1,7 @@
 package net.corda.derivativestradingnetwork.integrationTests
 
 import com.google.gson.*
+import com.regnosys.rosetta.common.serialisation.RosettaObjectMapper
 import net.corda.cdmsupport.eventparsing.parseContractFromJson
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.utilities.getOrThrow
@@ -10,6 +11,7 @@ import net.corda.testing.driver.NodeHandle
 import net.corda.testing.driver.WebserverHandle
 import okhttp3.*
 import org.isda.cdm.Contract
+import org.isda.cdm.ResetPrimitive
 import java.lang.reflect.Type
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -134,6 +136,11 @@ abstract class BusinessNetworkNode(val driver : DriverDSL, val testIdentity : Te
         }).registerTypeAdapter(Contract::class.java, object : JsonDeserializer<Contract> {
             override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Contract {
                 return parseContractFromJson(json.toString())
+            }
+        }).registerTypeAdapter(ResetPrimitive::class.java, object : JsonDeserializer<ResetPrimitive> {
+            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): ResetPrimitive {
+                val rosettaObjectMapper = RosettaObjectMapper.getDefaultRosettaObjectMapper()
+                return rosettaObjectMapper.readValue<ResetPrimitive>(json.toString(), ResetPrimitive::class.java)
             }
         }).create()
     }

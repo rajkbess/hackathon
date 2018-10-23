@@ -6,6 +6,7 @@ import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatedFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.cdmsupport.CDMContractState
+import net.corda.cdmsupport.CDMEvent
 import net.corda.cdmsupport.eventparsing.createContractIdentifier
 import net.corda.cdmsupport.eventparsing.parseEventFromJson
 import net.corda.cdmsupport.eventparsing.serializeCdmObjectIntoJson
@@ -58,7 +59,7 @@ class CompressCDMContractsOnLedgerFlow(val networkMap : NetworkMap, val compress
     private fun persistCDMEventOnTheLedger(eventJson : String) : SignedTransaction {
         val event = parseEventFromJson(eventJson)
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
-        val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub))
+        val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub), newTradeOutputContractId = CDMEvent.ID)
         cdmTransactionBuilder.verify(serviceHub)
         val signedByMe = serviceHub.signInitialTransaction(cdmTransactionBuilder)
         val counterPartySessions = cdmTransactionBuilder.getPartiesToSign().minus(ourIdentity).map { initiateFlow(it) }

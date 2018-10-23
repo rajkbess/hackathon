@@ -19,6 +19,7 @@ import net.corda.core.identity.Party
 import net.corda.core.transactions.FilteredTransaction
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.unwrap
+import net.corda.derivativestradingnetwork.DtnCommandsCreator
 import net.corda.derivativestradingnetwork.entity.ContractIdAndContractIdScheme
 import org.isda.cdm.Contract
 import org.isda.cdm.InterestRatePayout
@@ -95,18 +96,19 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
         val fixingRate = subFlow(GetFixingForDate(oracleParty, fixingDate))
         val cashFlow = calculateCashflow(fixingRate, cdmContractState)
         val resetCdmEvent = createResetCDMEvent(cdmContractState, cashFlow, fixingRate)
-        return persistCDMEventOnTheLedger(resetCdmEvent)
+        return persistCDMEventOnTheLedger(resetCdmEvent,fixingDate, fixingRate)
     }
 
     @Suspendable
-    private fun persistCDMEventOnTheLedger(eventJson : String) : SignedTransaction {
+    private fun persistCDMEventOnTheLedger(eventJson : String, fixingDate : LocalDate, fixingRate : BigDecimal) : SignedTransaction {
         val event = parseEventFromJson(eventJson)
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
-        val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub))
+        val commandsCreator = DtnCommandsCreator(oracleParty, fixingDate, fixingRate)
+        val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub), newTradeOutputContractId = CDMEvent.ID, commandsCreator = commandsCreator)
         cdmTransactionBuilder.verify(serviceHub)
         val signedByMe = serviceHub.signInitialTransaction(cdmTransactionBuilder)
         val signedByOracle = haveItSignedByOracle(signedByMe)
-        val counterPartySessions = cdmTransactionBuilder.getPartiesToSign().minus(ourIdentity).map { initiateFlow(it) }
+        val counterPartySessions = cdmTransactionBuilder.getPartiesToSign().minus(ourIdentity).minus(oracleParty).map { initiateFlow(it) }
         val stx = subFlow(CollectSignaturesFlow(signedByOracle, counterPartySessions))
         return subFlow(FinalityFlow(stx))
     }

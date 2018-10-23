@@ -45,7 +45,7 @@ class ApproveDraftCDMContractOnLedgerFlow(val networkMap : NetworkMap, val contr
     private fun persistOnTheLedger(eventJson : String, draftContractToConsume : StateAndRef<DraftCDMContractState>) : SignedTransaction {
         val event = parseEventFromJson(eventJson)
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
-        val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub),CDMEvent.ID)
+        val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub), newTradeOutputContractId = CDMEvent.ID)
         cdmTransactionBuilder.addInputState(draftContractToConsume)
 
         cdmTransactionBuilder.verify(serviceHub)

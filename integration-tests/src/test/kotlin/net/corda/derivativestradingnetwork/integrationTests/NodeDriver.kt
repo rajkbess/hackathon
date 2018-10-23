@@ -46,7 +46,7 @@ class NodeDriver {
             nodes.map { it.startCoreAsync() }.map { it.waitForCoreToStart() }.map { it.startWebAsync() }.map { it.waitForWebToStart() }.forEach { it.confirmNodeIsOnTheNetwork() }
             println("Establishing business network")
 
-            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes - dealer3, 0, 4, 0, 2, 1,0,1, 1)
+            establishBusinessNetworkAndConfirmAssertions(bno, nonBnoNodes - dealer3, 0, 5, 0, 2, 1,0,1, 1)
 
             putSomeTradesOnTheNetwork(dealer1, dealer2, ccp)
 

@@ -6,13 +6,17 @@ import net.corda.businessnetworks.membership.member.GetMembersFlow
 import net.corda.businessnetworks.membership.member.support.BusinessNetworkAwareInitiatedFlow
 import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.cdmsupport.CDMContractState
+import net.corda.cdmsupport.CDMEvent
 import net.corda.cdmsupport.eventparsing.createContractIdentifier
 import net.corda.cdmsupport.eventparsing.parseEventFromJson
 import net.corda.cdmsupport.network.NetworkMap
 import net.corda.cdmsupport.transactionbuilding.CdmTransactionBuilder
 import net.corda.cdmsupport.vaultquerying.DefaultCdmVaultQuery
+import net.corda.core.contracts.Command
+import net.corda.core.crypto.TransactionSignature
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
+import net.corda.core.transactions.FilteredTransaction
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.utilities.unwrap
 import net.corda.derivativestradingnetwork.entity.ContractIdAndContractIdScheme
@@ -22,6 +26,7 @@ import org.isda.cdm.PeriodExtendedEnum
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
+import java.util.function.Predicate
 
 @StartableByRPC
 class FixCDMContractsOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: Party, val fixingDate : LocalDate) : FlowLogic<List<ContractIdAndContractIdScheme>>() {
@@ -100,9 +105,16 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
         val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub))
         cdmTransactionBuilder.verify(serviceHub)
         val signedByMe = serviceHub.signInitialTransaction(cdmTransactionBuilder)
+        val signedByOracle = haveItSignedByOracle(signedByMe)
         val counterPartySessions = cdmTransactionBuilder.getPartiesToSign().minus(ourIdentity).map { initiateFlow(it) }
-        val stx = subFlow(CollectSignaturesFlow(signedByMe, counterPartySessions))
+        val stx = subFlow(CollectSignaturesFlow(signedByOracle, counterPartySessions))
         return subFlow(FinalityFlow(stx))
+    }
+
+    @Suspendable
+    private fun haveItSignedByOracle(signedByMe : SignedTransaction) : SignedTransaction {
+        val oracleSignature = subFlow(GetOraclesSignature(oracleParty, signedByMe))
+        return signedByMe.withAdditionalSignature(oracleSignature)
     }
 
     private fun calculateCashflow(fixingRate : BigDecimal, cdmContractState: CDMContractState) : Map<InterestRatePayout,BigDecimal> {
@@ -296,5 +308,53 @@ class GetFixingForDateResponder(flowSession : FlowSession) : BusinessNetworkAwar
     override fun onOtherPartyMembershipVerified() {
         val fixingDate = flowSession.receive<LocalDate>().unwrap { it }
         flowSession.send(BigDecimal("1.12345"))
+    }
+}
+
+@InitiatingFlow
+class GetOraclesSignature(val oracleParty : Party, val signedTransaction: SignedTransaction) : FlowLogic<TransactionSignature>() {
+
+    @Suspendable
+    override fun call(): TransactionSignature {
+        val ftx = signedTransaction.buildFilteredTransaction(Predicate {
+            when (it) {
+                is Command<*> -> it.value is CDMEvent.Commands.Reset
+                else -> false
+            }
+        })
+
+        val session = initiateFlow(oracleParty)
+        return session.sendAndReceive<TransactionSignature>(ftx).unwrap { it }
+    }
+
+}
+
+@InitiatedBy(GetOraclesSignature::class)
+class GetOraclesSignatureResponder(flowSession : FlowSession) : BusinessNetworkAwareInitiatedFlow<Unit>(flowSession) {
+
+    @Suspendable
+    override fun onOtherPartyMembershipVerified() {
+        val ftx = flowSession.receive<FilteredTransaction>().unwrap { it }
+
+        // Check the partial Merkle tree is valid.
+        ftx.verify()
+
+        //@todo this should be checking data in the reset, not just sign anything
+        fun areWeOkayWithThisElement(elem: Any) : Boolean {
+            return when {
+                elem is Command<*> -> elem.value is CDMEvent.Commands.Reset
+                else -> false
+            }
+        }
+
+        // Is it a Merkle tree we are willing to sign over?
+        val isValidMerkleTree = ftx.checkWithFun(::areWeOkayWithThisElement)
+
+        if (isValidMerkleTree) {
+            val signature = serviceHub.createSignature(ftx, ourIdentity.owningKey)
+            flowSession.send(signature)
+        } else {
+            throw FlowException("Oracle signature requested over invalid transaction.")
+        }
     }
 }

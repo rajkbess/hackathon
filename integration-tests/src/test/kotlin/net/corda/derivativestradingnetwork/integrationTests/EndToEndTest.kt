@@ -452,6 +452,19 @@ class EndToEndTest {
 
             confirmReset(resetsOnDealer1[0], fixingDate, BigDecimal("1.12345"))
             confirmReset(resetsOnDealer2[0], fixingDate, BigDecimal("1.12345"))
+
+            //fix 6*30 days later
+            val fixingDateSixMonthsLater = LocalDate.parse("2019-03-25")
+
+            dealer2.fixCDMContractsOnLedger(fixingDateSixMonthsLater)
+
+            resetsOnDealer1 = dealer1.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(2, resetsOnDealer1.size)
+
+            resetsOnDealer2 = dealer2.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(2, resetsOnDealer2.size)
+
+            confirmReset(resetsOnDealer1[1], fixingDateSixMonthsLater, BigDecimal("1.12345"))
         }
     }
 

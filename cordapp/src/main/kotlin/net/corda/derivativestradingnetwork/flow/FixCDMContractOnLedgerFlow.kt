@@ -7,12 +7,14 @@ import net.corda.businessnetworks.membership.member.support.BusinessNetworkAware
 import net.corda.businessnetworks.membership.states.MembershipMetadata
 import net.corda.cdmsupport.CDMContractState
 import net.corda.cdmsupport.CDMEvent
+import net.corda.cdmsupport.ResetState
 import net.corda.cdmsupport.eventparsing.createContractIdentifier
 import net.corda.cdmsupport.eventparsing.parseEventFromJson
 import net.corda.cdmsupport.network.NetworkMap
 import net.corda.cdmsupport.transactionbuilding.CdmTransactionBuilder
 import net.corda.cdmsupport.vaultquerying.DefaultCdmVaultQuery
 import net.corda.core.contracts.Command
+import net.corda.core.contracts.StateAndRef
 import net.corda.core.crypto.TransactionSignature
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
@@ -22,6 +24,7 @@ import net.corda.core.utilities.unwrap
 import net.corda.derivativestradingnetwork.DtnCommandsCreator
 import net.corda.derivativestradingnetwork.entity.ContractIdAndContractIdScheme
 import org.isda.cdm.Contract
+import org.isda.cdm.ContractIdentifier
 import org.isda.cdm.InterestRatePayout
 import org.isda.cdm.PeriodExtendedEnum
 import java.math.BigDecimal
@@ -96,21 +99,29 @@ class FixCDMContractOnLedgerFlow(val networkMap : NetworkMap, val oracleParty: P
         val fixingRate = subFlow(GetFixingForDate(oracleParty, fixingDate))
         val cashFlow = calculateCashflow(fixingRate, cdmContractState)
         val resetCdmEvent = createResetCDMEvent(cdmContractState, cashFlow, fixingRate)
-        return persistCDMEventOnTheLedger(resetCdmEvent,fixingDate, fixingRate)
+        val resetStatesToOverride = getResetStatesBeingOverriden(contractIdentifier)
+        return persistCDMEventOnTheLedger(resetCdmEvent,fixingDate, fixingRate, resetStatesToOverride)
     }
 
     @Suspendable
-    private fun persistCDMEventOnTheLedger(eventJson : String, fixingDate : LocalDate, fixingRate : BigDecimal) : SignedTransaction {
+    private fun persistCDMEventOnTheLedger(eventJson : String, fixingDate : LocalDate, fixingRate : BigDecimal, resetStatesToOverride : List<StateAndRef<ResetState>>) : SignedTransaction {
         val event = parseEventFromJson(eventJson)
         val notary = serviceHub.networkMapCache.notaryIdentities.first()
         val commandsCreator = DtnCommandsCreator(oracleParty, fixingDate, fixingRate)
         val cdmTransactionBuilder = CdmTransactionBuilder(notary, event, serviceHub, networkMap, DefaultCdmVaultQuery(serviceHub), newTradeOutputContractId = CDMEvent.ID, commandsCreator = commandsCreator)
+        resetStatesToOverride.forEach { cdmTransactionBuilder.addInputState(it) }
         cdmTransactionBuilder.verify(serviceHub)
         val signedByMe = serviceHub.signInitialTransaction(cdmTransactionBuilder)
         val signedByOracle = haveItSignedByOracle(signedByMe)
         val counterPartySessions = cdmTransactionBuilder.getPartiesToSign().minus(ourIdentity).minus(oracleParty).map { initiateFlow(it) }
         val stx = subFlow(CollectSignaturesFlow(signedByOracle, counterPartySessions))
         return subFlow(FinalityFlow(stx))
+    }
+
+    @Suspendable
+    private fun getResetStatesBeingOverriden(contractIdentifier : ContractIdentifier) : List<StateAndRef<ResetState>> {
+        val resetsForThisTrade = DefaultCdmVaultQuery(serviceHub).getResetStates(contractIdentifier)
+        return resetsForThisTrade.filter { it.state.data.resetPrimitive().date == fixingDate }
     }
 
     @Suspendable

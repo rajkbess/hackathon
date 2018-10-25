@@ -419,6 +419,42 @@ class EndToEndTest {
         }
     }
 
+    @Test
+    fun `Fixed-Floating contract can be re-fixed`() {
+        setUpEnvironmentAndRunTest { _, _, dealer1, dealer2, _, _, regulator ->
+
+            val cdmContract1 = EndToEndTest::class.java.getResource("/testData/lchDemo/dealer-1_dealer-2/cdmContract_6.json").readText()
+            insertTradeBilaterallyAndConfirmAssertions(cdmContract1, dealer1, dealer2)
+
+            //fix on effective date
+            val fixingDate = LocalDate.parse("2018-09-26")
+
+            var fixedTrades = dealer1.fixCDMContractsOnLedger(fixingDate)
+            assertEquals(1, fixedTrades.size)
+
+            var resetsOnDealer1 = dealer1.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, resetsOnDealer1.size)
+
+            var resetsOnDealer2 = dealer2.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, resetsOnDealer2.size)
+
+            confirmReset(resetsOnDealer1[0], fixingDate, BigDecimal("1.12345"))
+
+            //re-fix for same date
+            fixedTrades = dealer1.fixCDMContractsOnLedger(fixingDate)
+            assertEquals(1, fixedTrades.size)
+
+            resetsOnDealer1 = dealer1.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, resetsOnDealer1.size)
+
+            resetsOnDealer2 = dealer2.getResets("1234TradeId_6", "http://www.fpml.org/coding-scheme/external/unique-transaction-identifier/")
+            assertEquals(1, resetsOnDealer2.size)
+
+            confirmReset(resetsOnDealer1[0], fixingDate, BigDecimal("1.12345"))
+            confirmReset(resetsOnDealer2[0], fixingDate, BigDecimal("1.12345"))
+        }
+    }
+
     private fun confirmReset(resetPrimitive : ResetPrimitive, fixingDate : LocalDate, fixingRate : BigDecimal) {
         assertEquals(fixingDate, resetPrimitive.date)
         assertEquals(fixingRate, resetPrimitive.resetValue)

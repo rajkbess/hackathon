@@ -1,8 +1,6 @@
 package net.corda.derivativestradingnetwork.integrationTests
 
 import com.google.gson.*
-import com.regnosys.rosetta.common.serialisation.RosettaObjectMapper
-import net.corda.cdmsupport.eventparsing.parseContractFromJson
 import net.corda.core.concurrent.CordaFuture
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.core.TestIdentity
@@ -10,15 +8,11 @@ import net.corda.testing.driver.DriverDSL
 import net.corda.testing.driver.NodeHandle
 import net.corda.testing.driver.WebserverHandle
 import okhttp3.*
-import org.isda.cdm.Contract
-import org.isda.cdm.ResetPrimitive
-import java.lang.reflect.Type
-import java.time.Instant
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-abstract class BusinessNetworkNode(val driver : DriverDSL, val testIdentity : TestIdentity, autoStart : Boolean) {
+class NetworkNode(val driver : DriverDSL, val testIdentity : TestIdentity, autoStart : Boolean) {
 
     lateinit var coreHandle : NodeHandle
     lateinit var coreHandleFuture : CordaFuture<NodeHandle>
@@ -32,22 +26,22 @@ abstract class BusinessNetworkNode(val driver : DriverDSL, val testIdentity : Te
         }
     }
 
-    fun startCoreAsync() : BusinessNetworkNode {
+    fun startCoreAsync() : NetworkNode {
         coreHandleFuture = driver.startNode(providedName = testIdentity.name)
         return this
     }
 
-    fun waitForCoreToStart() : BusinessNetworkNode {
+    fun waitForCoreToStart() : NetworkNode {
         coreHandle = coreHandleFuture.getOrThrow()
         return this
     }
 
-    fun startWebAsync() : BusinessNetworkNode {
+    fun startWebAsync() : NetworkNode {
         webHandleFuture = driver.startWebserver(coreHandle)
         return this
     }
 
-    fun waitForWebToStart() : BusinessNetworkNode {
+    fun waitForWebToStart() : NetworkNode {
         webHandle = webHandleFuture.getOrThrow()
         return this
     }
@@ -115,33 +109,11 @@ abstract class BusinessNetworkNode(val driver : DriverDSL, val testIdentity : Te
     }
 
     private fun objectToJson(objekt : Any) : String {
-        return getSuitableGson().toJson(objekt)
+        return Gson().toJson(objekt)
     }
 
     protected fun getPatientHttpClient() : OkHttpClient {
         return OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).writeTimeout(120, TimeUnit.SECONDS).build()
     }
 
-    protected fun getSuitableGson() : Gson {
-        return GsonBuilder().registerTypeAdapter(Instant::class.java, object : JsonSerializer<Instant> {
-
-            override fun serialize(src: Instant?, typeOfSrc: Type?, context: JsonSerializationContext?): JsonElement {
-                return JsonPrimitive(src?.epochSecond ?: 0)
-            }
-
-        }).registerTypeAdapter(Instant::class.java, object : JsonDeserializer<Instant> {
-            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Instant {
-                return Instant.ofEpochSecond(json!!.asLong)
-            }
-        }).registerTypeAdapter(Contract::class.java, object : JsonDeserializer<Contract> {
-            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): Contract {
-                return parseContractFromJson(json.toString())
-            }
-        }).registerTypeAdapter(ResetPrimitive::class.java, object : JsonDeserializer<ResetPrimitive> {
-            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): ResetPrimitive {
-                val rosettaObjectMapper = RosettaObjectMapper.getDefaultRosettaObjectMapper()
-                return rosettaObjectMapper.readValue<ResetPrimitive>(json.toString(), ResetPrimitive::class.java)
-            }
-        }).create()
-    }
 }

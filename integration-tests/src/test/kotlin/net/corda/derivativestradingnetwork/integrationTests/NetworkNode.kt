@@ -2,12 +2,17 @@ package net.corda.derivativestradingnetwork.integrationTests
 
 import com.google.gson.*
 import net.corda.core.concurrent.CordaFuture
+import net.corda.core.identity.Party
+import net.corda.core.messaging.startFlow
+import net.corda.core.messaging.startTrackedFlow
 import net.corda.core.utilities.getOrThrow
+import net.corda.derivativestradingnetwork.flow.UserIssuanceRequestFlow
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.DriverDSL
 import net.corda.testing.driver.NodeHandle
 import net.corda.testing.driver.WebserverHandle
 import okhttp3.*
+import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -18,6 +23,14 @@ class NetworkNode(val driver : DriverDSL, val testIdentity : TestIdentity, autoS
     lateinit var coreHandleFuture : CordaFuture<NodeHandle>
     lateinit var webHandle : WebserverHandle
     lateinit var webHandleFuture : CordaFuture<WebserverHandle>
+
+    fun startUserIssuanceFlow(amount : Long, currency : Currency, bank : Party) {
+        coreHandle.rpc.startTrackedFlow(::UserIssuanceRequestFlow, amount, currency, bank)
+    }
+
+    fun party() : Party {
+        return coreHandle.nodeInfo.legalIdentities.first()
+    }
 
     init {
         if(autoStart) {

@@ -5,6 +5,7 @@ import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.TestIdentity
 import net.corda.testing.driver.*
 import org.junit.Test
+import java.util.*
 
 class EndToEndTest {
 
@@ -50,6 +51,8 @@ class EndToEndTest {
     @Test
     fun `Alice can ask bank 1 for token creation`() {
         setUpEnvironmentAndRunTest { driver, alice, bob, bank1, issuer, amlAuthority ->
+
+            alice.startUserIssuanceFlow(100, Currency.getInstance("USD"),bank1.party())
 
         }
     }

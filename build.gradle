@@ -2,8 +2,8 @@ import java.nio.file.Files
 
 buildscript {
     ext.corda_release_group = 'net.corda'
-    ext.corda_release_version = 'hackathon-temp'
-    ext.corda_gradle_plugins_version = '4.0.29'
+    ext.corda_release_version = '3.3-corda'
+    ext.corda_gradle_plugins_version = '3.2.1'
     ext.kotlin_version = '1.2.51'
     ext.junit_version = '4.12'
     ext.quasar_version = '0.7.9'
@@ -106,15 +106,32 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     }
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-parameters" // Required for shell commands.
+}
+
 task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     directory "./build/nodes"
     node {
-        name "O=issuer,L=London,C=GB"
+        name "O=notary,L=London,C=GB"
         notary = [validating : false]
         p2pPort 10002
         rpcSettings {
             address("localhost:10003")
             adminAddress("localhost:10004")
+        }
+        cordapps = [
+                "$project.group:cordapp-contracts-states:$project.version",
+                "$project.group:cordapp:$project.version",
+        ]
+    }
+    node {
+        name "O=issuer,L=London,C=GB"
+        notary = [validating : false]
+        p2pPort 10052
+        rpcSettings {
+            address("localhost:10053")
+            adminAddress("localhost:10054")
         }
         cordapps = [
                 "$project.group:cordapp-contracts-states:$project.version",

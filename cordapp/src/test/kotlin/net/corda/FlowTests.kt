@@ -1,11 +1,9 @@
 package net.corda
 
-import net.corda.core.contracts.TransactionVerificationException
-import net.corda.core.flows.FlowException
 import net.corda.core.identity.CordaX500Name
 import net.corda.core.node.services.queryBy
 import net.corda.core.utilities.getOrThrow
-import net.corda.derivativestradingnetwork.TokenTransferFlow
+import net.corda.derivativestradingnetwork.flow.TokenTransferFlow
 import net.corda.derivativestradingnetwork.flow.UserIssuanceRequestFlow
 import net.corda.derivativestradingnetwork.states.MoneyToken
 import net.corda.finance.EUR
@@ -16,7 +14,6 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class FlowTests {
     private val network = MockNetwork(listOf("net.corda"))

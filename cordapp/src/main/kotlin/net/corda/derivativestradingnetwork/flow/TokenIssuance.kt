@@ -89,7 +89,7 @@ class TokenIssuanceFlow(val amount: Long, val currency: Currency, val user: Part
         val fullySignedTransaction = subFlow(CollectSignaturesFlow(partSignedTx, listOf(sessionWithIssuer)))
         val finalisedTx = subFlow(FinalityFlow(fullySignedTransaction))
 
-        val ledgerTx = finalisedTx.toLedgerTransaction(serviceHub)
+        val ledgerTx = finalisedTx.toLedgerTransaction(serviceHub, false)
         val moneyStateInput = ledgerTx.outRef<MoneyToken.State>(0)
 
         val requiredSigners2 = mutableListOf(ourIdentity.owningKey)

@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="FlowTests" type="JUnit" factoryName="JUnit" singleton="true" nameIsGenerated="true">
+    <module name="cordapp_test" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="net.corda.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <option name="PACKAGE_NAME" value="net.corda" />
+    <option name="MAIN_CLASS_NAME" value="net.corda.FlowTests" />
+    <option name="METHOD_NAME" value="" />
+    <option name="VM_PARAMETERS" value="-ea -javaagent:../lib/quasar.jar" />
+    <option name="PARAMETERS" value="" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -29,7 +29,7 @@ class MoneyToken : Contract {
             val currency : Currency,
             val issuer : Party,
             val holder : Party,
-            val amlAuthority : Party) : ContractState {
+            val amlAuthority : Party? = null) : ContractState {
 
 
         override val participants = listOf(holder)

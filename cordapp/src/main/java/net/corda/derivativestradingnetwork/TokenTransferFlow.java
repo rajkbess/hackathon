@@ -59,7 +59,7 @@ public class TokenTransferFlow extends FlowLogic<Void> {
         MoneyToken.State inputState = inputStateAndRef.getState().getData();
 
         MoneyToken.State outputToken =
-                new MoneyToken.State(amount, currency, inputState.getIssuer(), newOwner, null);
+                new MoneyToken.State(amount, currency, inputState.getIssuer(), newOwner, inputState.getAmlAuthority());
         CommandData transferCommand = new MoneyToken.Commands.Transfer();
 
         TransactionBuilder txBuilder = new TransactionBuilder(notary);

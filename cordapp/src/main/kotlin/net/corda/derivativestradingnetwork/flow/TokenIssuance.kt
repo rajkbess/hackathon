@@ -72,14 +72,19 @@ class TokenIssuanceFlow(val amount: Long, val currency: Currency, val user: Part
         progressTracker.currentStep = PROPOSING_TRANSACTION_TO_ISSUER
 
         val issuer = getIssuer()
+        val aml = getAml()
         val sessionWithIssuer = initiateFlow(issuer)
 
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
 
-        //@todo create the transaction here with the output state of the money token, the holder being the bank
+        val requiredSigners = mutableListOf(ourIdentity.owningKey, issuer.owningKey)
+        if (amount > 150) {
+            requiredSigners += aml.owningKey
+        }
+
         val txBuilder = TransactionBuilder(notary)
-                .addOutputState(MoneyToken.State(amount, currency, issuer, ourIdentity), MoneyToken.CONTRACT_NAME)
-                .addCommand(MoneyToken.Commands.Issue(), ourIdentity.owningKey, issuer.owningKey)
+                .addOutputState(MoneyToken.State(amount, currency, issuer, ourIdentity, aml), MoneyToken.CONTRACT_NAME)
+                .addCommand(MoneyToken.Commands.Issue(), requiredSigners)
 
         txBuilder.verify(serviceHub)
 
@@ -87,13 +92,12 @@ class TokenIssuanceFlow(val amount: Long, val currency: Currency, val user: Part
         val fullySignedTransaction = subFlow(CollectSignaturesFlow(partSignedTx, listOf(sessionWithIssuer)))
         val finalisedTx = subFlow(FinalityFlow(fullySignedTransaction))
 
-        //@todo and when that's signed by the ECB and notarized then invoke another flow that will change the holder from the bank to the user
         val ledgerTx = finalisedTx.toLedgerTransaction(serviceHub)
         val moneyStateInput = ledgerTx.outRef<MoneyToken.State>(0)
 
         val txBuilder2 = TransactionBuilder(notary)
                 .addInputState(moneyStateInput)
-                .addOutputState(MoneyToken.State(amount, currency, issuer, user), MoneyToken.CONTRACT_NAME)
+                .addOutputState(MoneyToken.State(amount, currency, issuer, user, aml), MoneyToken.CONTRACT_NAME)
                 .addCommand(MoneyToken.Commands.Transfer(), ourIdentity.owningKey)
 
         txBuilder2.verify(serviceHub)
@@ -105,6 +109,11 @@ class TokenIssuanceFlow(val amount: Long, val currency: Currency, val user: Part
     private fun getIssuer(): Party {
         return serviceHub.networkMapCache.allNodes.map { it.legalIdentities.first() }.single { it.name.organisation.contains("issuer", true) }
     }
+
+    @Suspendable
+    private fun getAml(): Party {
+        return serviceHub.networkMapCache.allNodes.map { it.legalIdentities.first() }.single { it.name.organisation.contains("aml", true) }
+    }
 }
 
 @InitiatedBy(TokenIssuanceFlow::class)
@@ -112,7 +121,6 @@ class TokenIssuanceResponderFlow(val flowSession: FlowSession) : FlowLogic<Signe
 
     @Suspendable
     override fun call(): SignedTransaction {
-        //@todo this is the point where the issuer (ECB) has to sign the transaction coming from the commercial bank. Speak to Cais.
         val signTransactionFlow = object : SignTransactionFlow(flowSession) {
             override fun checkTransaction(stx: SignedTransaction) {
 

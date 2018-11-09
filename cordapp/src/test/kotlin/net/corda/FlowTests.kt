@@ -55,7 +55,7 @@ class FlowTests {
     }
 
     @Test
-    fun `golden path test`() {
+    fun `issuance and transfer without AML`() {
         val flow = UserIssuanceRequestFlow(100, EUR, commercialBankParty)
         val future = userOne.startFlow(flow)
         network.runNetwork()
@@ -87,6 +87,46 @@ class FlowTests {
             assertEquals(1, moneyStates.size)
             val moneyState = moneyStates.single().state.data
             assertEquals(moneyState.amount, 100)
+            assertEquals(moneyState.currency, EUR)
+            assertEquals(moneyState.holder, userTwoParty)
+            assertEquals(moneyState.issuer, centralBankParty)
+            assertEquals(moneyState.amlAuthority, amlParty)
+        }
+    }
+
+    @Test
+    fun `issuance and transfer with AML`() {
+        val flow = UserIssuanceRequestFlow(200, EUR, commercialBankParty)
+        val future = userOne.startFlow(flow)
+        network.runNetwork()
+        future.getOrThrow()
+
+        userOne.transaction {
+            val moneyStates = userOne.services.vaultService.queryBy<MoneyToken.State>().states
+            assertEquals(1, moneyStates.size)
+            val moneyState = moneyStates.single().state.data
+            assertEquals(moneyState.amount, 200)
+            assertEquals(moneyState.currency, EUR)
+            assertEquals(moneyState.holder, userOneParty)
+            assertEquals(moneyState.issuer, centralBankParty)
+            assertEquals(moneyState.amlAuthority, amlParty)
+        }
+
+        val flow2 = TokenTransferFlow(EUR, 200, userTwoParty)
+        val future2 = userOne.startFlow(flow2)
+        network.runNetwork()
+        future2.getOrThrow()
+
+        userOne.transaction {
+            val moneyStates = userOne.services.vaultService.queryBy<MoneyToken.State>().states
+            assertEquals(0, moneyStates.size)
+        }
+
+        userTwo.transaction {
+            val moneyStates = userTwo.services.vaultService.queryBy<MoneyToken.State>().states
+            assertEquals(1, moneyStates.size)
+            val moneyState = moneyStates.single().state.data
+            assertEquals(moneyState.amount, 200)
             assertEquals(moneyState.currency, EUR)
             assertEquals(moneyState.holder, userTwoParty)
             assertEquals(moneyState.issuer, centralBankParty)

@@ -1,6 +1,7 @@
 package net.corda.derivativestradingnetwork;
 
 import co.paralleluniverse.fibers.Suspendable;
+import com.google.common.collect.ImmutableList;
 import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.flows.*;
@@ -12,6 +13,9 @@ import net.corda.core.transactions.TransactionBuilder;
 import net.corda.core.utilities.ProgressTracker;
 import net.corda.derivativestradingnetwork.states.MoneyToken;
 
+import java.security.PublicKey;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -62,16 +66,29 @@ public class TokenTransferFlow extends FlowLogic<Void> {
                 new MoneyToken.State(amount, currency, inputState.getIssuer(), newOwner, inputState.getAmlAuthority());
         CommandData transferCommand = new MoneyToken.Commands.Transfer();
 
-        TransactionBuilder txBuilder = new TransactionBuilder(notary);
-        txBuilder.addInputState(inputStateAndRef);
-        txBuilder.addOutputState(outputToken, MoneyToken.Companion.getCONTRACT_NAME());
-        txBuilder.addCommand(transferCommand, getOurIdentity().getOwningKey());
+        List<PublicKey> requiredSigners;
+        if (amount > 150) {
+            requiredSigners = Arrays.asList(getOurIdentity().getOwningKey(), outputToken.getAmlAuthority().getOwningKey());
+        } else {
+            requiredSigners = Collections.singletonList(getOurIdentity().getOwningKey());
+        }
+
+        TransactionBuilder txBuilder = new TransactionBuilder(notary)
+                .addInputState(inputStateAndRef)
+                .addOutputState(outputToken, MoneyToken.Companion.getCONTRACT_NAME())
+                .addCommand(transferCommand, requiredSigners);
 
         txBuilder.verify(getServiceHub());
 
-        SignedTransaction stx = getServiceHub().signInitialTransaction(txBuilder);
+        SignedTransaction partSignedTx = getServiceHub().signInitialTransaction(txBuilder);
 
-        subFlow(new FinalityFlow(stx));
+        if (amount > 150) {
+            FlowSession sessionWithAml = initiateFlow(outputToken.getAmlAuthority());
+            SignedTransaction fullySignedTx = subFlow(new CollectSignaturesFlow(partSignedTx, ImmutableList.of(sessionWithAml)));
+            subFlow(new FinalityFlow(fullySignedTx));
+        } else {
+            subFlow(new FinalityFlow(partSignedTx));
+        }
 
         return null;
     }

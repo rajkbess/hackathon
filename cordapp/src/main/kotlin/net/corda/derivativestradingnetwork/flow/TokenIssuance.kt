@@ -78,9 +78,6 @@ class TokenIssuanceFlow(val amount: Long, val currency: Currency, val user: Part
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
 
         val requiredSigners = mutableListOf(ourIdentity.owningKey, issuer.owningKey)
-        if (amount > 150) {
-            requiredSigners += aml.owningKey
-        }
 
         val txBuilder = TransactionBuilder(notary)
                 .addOutputState(MoneyToken.State(amount, currency, issuer, ourIdentity, aml), MoneyToken.CONTRACT_NAME)
@@ -95,14 +92,28 @@ class TokenIssuanceFlow(val amount: Long, val currency: Currency, val user: Part
         val ledgerTx = finalisedTx.toLedgerTransaction(serviceHub)
         val moneyStateInput = ledgerTx.outRef<MoneyToken.State>(0)
 
+        val requiredSigners2 = mutableListOf(ourIdentity.owningKey)
+        if (amount > 150) {
+            requiredSigners2 += aml.owningKey
+        }
+
         val txBuilder2 = TransactionBuilder(notary)
                 .addInputState(moneyStateInput)
                 .addOutputState(MoneyToken.State(amount, currency, issuer, user, aml), MoneyToken.CONTRACT_NAME)
-                .addCommand(MoneyToken.Commands.Transfer(), ourIdentity.owningKey)
+                .addCommand(MoneyToken.Commands.Transfer(), requiredSigners2)
 
         txBuilder2.verify(serviceHub)
-        val signedTx = serviceHub.signInitialTransaction(txBuilder2)
-        return subFlow(FinalityFlow(signedTx))
+
+        val partSignedTx2 = serviceHub.signInitialTransaction(txBuilder2)
+
+        val fullySignedTx = if (amount > 150) {
+            val amlSession = initiateFlow(aml)
+            subFlow(CollectSignaturesFlow(partSignedTx2, listOf(amlSession)))
+        } else {
+            partSignedTx2
+        }
+
+        return subFlow(FinalityFlow(fullySignedTx))
     }
 
     @Suspendable
